@@ -6,7 +6,7 @@ import { fmtDate, num, signed, MINUS } from "./format";
 import { Legend } from "./Legend";
 import { MapView, type FlyReq } from "./MapView";
 import { STEPS } from "./steps";
-import { StatusBadge, Tag } from "./Tag";
+import { StatusBadge, Tag, TagKey } from "./Tag";
 import { WaterChart } from "./WaterChart";
 
 export default function App() {
@@ -20,6 +20,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <a className="skip-link" href="#map-controls">Skip to map controls</a>
       <Header />
       {error ? (
         <p className="status-msg">The data files could not be loaded ({error}).</p>
@@ -108,6 +109,50 @@ function Atlas({ data }: { data: Data }) {
 
   return (
     <main className="atlas">
+      <aside className="story-col" aria-label="Story">
+        <nav aria-label="Story steps">
+          <p className="ctl-label">Story · 8 steps</p>
+          <ol className="step-index">
+            {STEPS.map((s, i) => (
+              <li key={s.key}>
+                <button aria-current={i === step ? "step" : undefined} onClick={() => goStep(i)}>
+                  <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="step-title">{s.title}</span>
+                  <ChevronRight size={15} aria-hidden className="step-arrow" />
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        <TagKey />
+
+        <article key={step} className="story fade-in">
+          <Body d={data} />
+          {step < STEPS.length - 1 && (
+            <button type="button" className="next-step" onClick={() => goStep(step + 1)}>
+              Next: {STEPS[step + 1]!.title} <ArrowRight size={16} aria-hidden />
+            </button>
+          )}
+        </article>
+
+        <section className="chart-section" aria-labelledby="chart-title">
+          <div className="chart-head">
+            <h3 id="chart-title">Water area vs river level</h3>
+            <label className="sr-only" htmlFor="chart-zone">Zone for chart</label>
+            <select id="chart-zone" value={chartZone} onChange={(e) => setChartZone(e.target.value as ZoneKey)}>
+              {ZONE_KEYS.map((z) => <option key={z} value={z}>{ZONES[z].name}</option>)}
+            </select>
+          </div>
+          <WaterChart data={data} zone={chartZone} dateKey={afterKey} />
+          <p className="note">
+            Red bands: days the gauge was below its official low-water mark. Water areas from NISAR (L-band) and Sentinel-1
+            (C-band, open water only, windy dates left out) <Tag kind="real" />, levels from DanubeAlert <Tag kind="real" />.
+            Correlation, not proof of cause.
+          </p>
+        </section>
+      </aside>
+
       <section className="map-col" aria-label="Map and controls">
         <MapView
           data={data}
@@ -141,7 +186,7 @@ function Atlas({ data }: { data: Data }) {
           <p className="sr-only" aria-live="polite">{said}</p>
         </MapView>
 
-        <div className="controlbar">
+        <div className="controlbar" id="map-controls" tabIndex={-1}>
           <div className="controlbar-row controls">
             <div className="ctl-group">
               <span className="ctl-label" id="lbl-layer">Map layer</span>
@@ -210,47 +255,6 @@ function Atlas({ data }: { data: Data }) {
         </div>
       </section>
 
-      <aside className="story-col" aria-label="Story">
-        <nav aria-label="Story steps">
-          <p className="ctl-label">Story · 8 steps</p>
-          <ol className="step-index">
-            {STEPS.map((s, i) => (
-              <li key={s.key}>
-                <button aria-current={i === step ? "step" : undefined} onClick={() => goStep(i)}>
-                  <span className="num">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="step-title">{s.title}</span>
-                  <ChevronRight size={15} aria-hidden className="step-arrow" />
-                </button>
-              </li>
-            ))}
-          </ol>
-        </nav>
-
-        <article key={step} className="story fade-in">
-          <Body d={data} />
-          {step < STEPS.length - 1 && (
-            <button type="button" className="next-step" onClick={() => goStep(step + 1)}>
-              Next: {STEPS[step + 1]!.title} <ArrowRight size={16} aria-hidden />
-            </button>
-          )}
-        </article>
-
-        <section className="chart-section" aria-labelledby="chart-title">
-          <div className="chart-head">
-            <h3 id="chart-title">Water area vs river level</h3>
-            <label className="sr-only" htmlFor="chart-zone">Zone for chart</label>
-            <select id="chart-zone" value={chartZone} onChange={(e) => setChartZone(e.target.value as ZoneKey)}>
-              {ZONE_KEYS.map((z) => <option key={z} value={z}>{ZONES[z].name}</option>)}
-            </select>
-          </div>
-          <WaterChart data={data} zone={chartZone} dateKey={afterKey} />
-          <p className="note">
-            Red bands: days the gauge was below its official low-water mark. Water areas from NISAR (L-band) and Sentinel-1
-            (C-band, open water only, windy dates left out) <Tag kind="real" />, levels from DanubeAlert <Tag kind="real" />.
-            Correlation, not proof of cause.
-          </p>
-        </section>
-      </aside>
     </main>
   );
 }
