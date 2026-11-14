@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Box, Columns2 } from "lucide-react";
+import { ArrowRight, Box, ChevronRight, Columns2 } from "lucide-react";
 import { ASSET_BASE, MODES, OPENING_DATE, ZONES, ZONE_KEYS, type Mode, type Pol, type ZoneKey } from "./config";
 import { loadAll, zoneChange, type Data } from "./data";
 import { fmtDate, num, signed, MINUS } from "./format";
@@ -129,33 +129,46 @@ function Atlas({ data }: { data: Data }) {
         </MapView>
 
         <div className="controlbar">
-          <div className="controlbar-row scroll-x">
-            <div className="seg" role="radiogroup" aria-label="Map layer">
-              {MODES.map((m) => (
-                <button key={m.key} role="radio" aria-checked={mode === m.key} onClick={() => setMode(m.key)}>
-                  {m.label}
-                </button>
-              ))}
+          <div className="controlbar-row controls">
+            <div className="ctl-group">
+              <span className="ctl-label" id="lbl-layer">Map layer</span>
+              <div className="seg seg-layer" role="radiogroup" aria-labelledby="lbl-layer">
+                {MODES.map((m) => (
+                  <button key={m.key} type="button" role="radio" aria-checked={mode === m.key} onClick={() => setMode(m.key)}>
+                    {m.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="seg" role="radiogroup" aria-label="Radar polarisation">
-              {(["hh", "hv"] as Pol[]).map((p) => (
-                <button key={p} role="radio" aria-checked={pol === p} onClick={() => setPol(p)}>
-                  {p.toUpperCase()}
-                </button>
-              ))}
+            <div className="ctl-group">
+              <span className="ctl-label" id="lbl-pol">Radar band</span>
+              <div className="seg" role="radiogroup" aria-labelledby="lbl-pol">
+                {(["hh", "hv"] as Pol[]).map((p) => (
+                  <button key={p} type="button" role="radio" aria-checked={pol === p} onClick={() => setPol(p)}>
+                    {p.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
-            <button
-              className="toggle"
-              aria-pressed={swipeOn}
-              disabled={!canSwipe}
-              onClick={() => setSwipe((s) => !s)}
-              title={canSwipe ? "Swipe before / after" : "Swipe works in Water and Radar modes"}
-            >
-              <Columns2 size={14} aria-hidden /> Swipe before / after
-            </button>
-            <button className="toggle" aria-pressed={terrain} onClick={() => setTerrain((t) => !t)}>
-              <Box size={14} aria-hidden /> 3D
-            </button>
+            <div className="ctl-group">
+              <span className="ctl-label">View</span>
+              <div className="ctl-row">
+                <button
+                  type="button"
+                  className="switch"
+                  role="switch"
+                  aria-checked={swipeOn}
+                  disabled={!canSwipe}
+                  onClick={() => setSwipe((s) => !s)}
+                  title={canSwipe ? "Compare the before date with the selected date" : "Swipe works in Water and Radar only modes"}
+                >
+                  <Columns2 size={15} aria-hidden /> Swipe compare <span className="switch-track" aria-hidden><span /></span>
+                </button>
+                <button type="button" className="switch" role="switch" aria-checked={terrain} onClick={() => setTerrain((t) => !t)}>
+                  <Box size={15} aria-hidden /> 3D terrain <span className="switch-track" aria-hidden><span /></span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="controlbar-row timeline">
@@ -186,11 +199,14 @@ function Atlas({ data }: { data: Data }) {
 
       <aside className="story-col" aria-label="Story">
         <nav aria-label="Story steps">
+          <p className="ctl-label">Story · 8 steps</p>
           <ol className="step-index">
             {STEPS.map((s, i) => (
               <li key={s.key}>
                 <button aria-current={i === step ? "step" : undefined} onClick={() => goStep(i)}>
-                  <span className="num">{String(i + 1).padStart(2, "0")}</span> {s.title}
+                  <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="step-title">{s.title}</span>
+                  <ChevronRight size={15} aria-hidden className="step-arrow" />
                 </button>
               </li>
             ))}
@@ -199,6 +215,11 @@ function Atlas({ data }: { data: Data }) {
 
         <article key={step} className="story fade-in">
           <Body d={data} />
+          {step < STEPS.length - 1 && (
+            <button type="button" className="next-step" onClick={() => goStep(step + 1)}>
+              Next: {STEPS[step + 1]!.title} <ArrowRight size={16} aria-hidden />
+            </button>
+          )}
         </article>
 
         <section className="chart-section" aria-labelledby="chart-title">
