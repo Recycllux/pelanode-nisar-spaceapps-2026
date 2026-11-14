@@ -1,0 +1,71 @@
+{
+ "n_cells": 16678,
+ "n_train_all": 83390,
+ "n_train_used": 8000,
+ "n_test": 83390,
+ "target": "f_fv",
+ "metrics": {
+  "persistence": {
+   "cell_mae": 0.0146,
+   "cell_rmse": 0.0386,
+   "area_mae_km2": 23.1
+  },
+  "gradient_boosting": {
+   "cell_mae": 0.0152,
+   "cell_rmse": 0.0397,
+   "area_mae_km2": 23.8
+  },
+  "tabpfn_3.5": {
+   "cell_mae": 0.0152,
+   "cell_rmse": 0.0392,
+   "area_mae_km2": 24.2
+  }
+ },
+ "test_dates": [
+  {
+   "date": "2026-09-10",
+   "observed": 139.8,
+   "persistence": 97.3,
+   "gradient_boosting": 79.2,
+   "tabpfn_3.5": 89.0
+  },
+  {
+   "date": "2026-09-22",
+   "observed": 116.2,
+   "persistence": 139.8,
+   "gradient_boosting": 108.4,
+   "tabpfn_3.5": 129.7
+  },
+  {
+   "date": "2026-10-04",
+   "observed": 129.5,
+   "persistence": 116.2,
+   "gradient_boosting": 94.9,
+   "tabpfn_3.5": 99.2
+  },
+  {
+   "date": "2026-10-16",
+   "observed": 100.9,
+   "persistence": 129.5,
+   "gradient_boosting": 99.4,
+   "tabpfn_3.5": 118.3
+  },
+  {
+   "date": "2026-10-28",
+   "observed": 93.2,
+   "persistence": 100.9,
+   "gradient_boosting": 78.9,
+   "tabpfn_3.5": 84.4
+  }
+ ],
+ "forecast": {
+  "date": "2026-11-09",
+  "from_date": "2026-10-28",
+  "last_observed_km2": 93.2,
+  "p10_km2": 22.3,
+  "p50_km2": 75.2,
+  "p90_km2": 187.6,
+  "label": "Future",
+  "note": "Sum of per-cell quantiles; a rough band, not a joint interval."
+ }
+}

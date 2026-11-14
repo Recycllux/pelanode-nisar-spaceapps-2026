@@ -1,0 +1,113 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.63641,
+     45.3966
+    ]
+   },
+   "properties": {
+    "label": "P1",
+    "zone": "delta",
+    "kind": "reed bed",
+    "lost_pct": 99,
+    "text": "reed bed, 99% of the 500 m cell lost water (18/06 \u2192 16/10). Proposed: water-level logger + soil-moisture probe.",
+    "status": "Simulated"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.48636,
+     45.17942
+    ]
+   },
+   "properties": {
+    "label": "P2",
+    "zone": "delta",
+    "kind": "reed bed",
+    "lost_pct": 98,
+    "text": "reed bed, 98% of the 500 m cell lost water (18/06 \u2192 16/10). Proposed: water-level logger + soil-moisture probe.",
+    "status": "Simulated"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.41903,
+     45.39241
+    ]
+   },
+   "properties": {
+    "label": "P3",
+    "zone": "delta",
+    "kind": "reed bed",
+    "lost_pct": 97,
+    "text": "reed bed, 97% of the 500 m cell lost water (18/06 \u2192 16/10). Proposed: water-level logger + soil-moisture probe.",
+    "status": "Simulated"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.38926,
+     44.98796
+    ]
+   },
+   "properties": {
+    "label": "P4",
+    "zone": "delta",
+    "kind": "reed bed",
+    "lost_pct": 96,
+    "text": "reed bed, 96% of the 500 m cell lost water (18/06 \u2192 16/10). Proposed: water-level logger + soil-moisture probe.",
+    "status": "Simulated"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.5984,
+     44.84386
+    ]
+   },
+   "properties": {
+    "label": "P5",
+    "zone": "delta",
+    "kind": "reed bed",
+    "lost_pct": 96,
+    "text": "reed bed, 96% of the 500 m cell lost water (18/06 \u2192 16/10). Proposed: water-level logger + soil-moisture probe.",
+    "status": "Simulated"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     28.10091,
+     44.26531
+    ]
+   },
+   "properties": {
+    "label": "P6",
+    "zone": "cernavoda",
+    "kind": "channel / sandbank",
+    "lost_pct": 19,
+    "text": "channel / sandbank, 19% of the 500 m cell lost water (24/07 \u2192 17/08). Proposed: water-level logger + soil-moisture probe.",
+    "status": "Simulated"
+   }
+  }
+ ]
+}

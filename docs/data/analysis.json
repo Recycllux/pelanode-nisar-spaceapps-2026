@@ -1,0 +1,94 @@
+{
+ "flood_threshold": {
+  "km2": 737.9,
+  "median_cm": 91.0,
+  "p10_cm": 33.5,
+  "p90_cm": 91.0,
+  "legend_cm": [
+   0.0,
+   100.0
+  ]
+ },
+ "lag": [
+  {
+   "lag_days": 0,
+   "rho_total": 0.645,
+   "rho_under_veg": 0.627
+  },
+  {
+   "lag_days": 3,
+   "rho_total": 0.724,
+   "rho_under_veg": 0.797
+  },
+  {
+   "lag_days": 6,
+   "rho_total": 0.877,
+   "rho_under_veg": 0.932
+  },
+  {
+   "lag_days": 9,
+   "rho_total": 0.845,
+   "rho_under_veg": 0.909
+  },
+  {
+   "lag_days": 12,
+   "rho_total": 0.882,
+   "rho_under_veg": 0.845
+  },
+  {
+   "lag_days": 15,
+   "rho_total": 0.838,
+   "rho_under_veg": 0.779
+  },
+  {
+   "lag_days": 18,
+   "rho_total": 0.731,
+   "rho_under_veg": 0.703
+  },
+  {
+   "lag_days": 21,
+   "rho_total": 0.727,
+   "rho_under_veg": 0.791
+  },
+  {
+   "lag_days": 24,
+   "rho_total": 0.682,
+   "rho_under_veg": 0.745
+  },
+  {
+   "lag_days": 27,
+   "rho_total": 0.67,
+   "rho_under_veg": 0.642
+  },
+  {
+   "lag_days": 30,
+   "rho_total": 0.74,
+   "rho_under_veg": 0.74
+  },
+  {
+   "lag_days": 33,
+   "rho_total": 0.745,
+   "rho_under_veg": 0.818
+  },
+  {
+   "lag_days": 36,
+   "rho_total": 0.764,
+   "rho_under_veg": 0.836
+  },
+  {
+   "lag_days": 39,
+   "rho_total": 0.791,
+   "rho_under_veg": 0.8
+  },
+  {
+   "lag_days": 42,
+   "rho_total": 0.8,
+   "rho_under_veg": 0.773
+  },
+  {
+   "lag_days": 45,
+   "rho_total": 0.8,
+   "rho_under_veg": 0.773
+  }
+ ]
+}

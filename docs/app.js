@@ -359,7 +359,7 @@
         <p class="note">The probe network does not exist yet. It shows how ARBDD could act on the radar signal. <span class="tag future">Future</span></p>
         ${forecast ? `<h3 style="margin-top:12px">Next 12 days <span class="tag future">Future</span></h3>
         <p>A TabPFN-3.5 model trained on the 2026 NISAR series expects about <b>${km(forecast.forecast.p50_km2)} km²</b> of water under the Delta's vegetation on ${fmtDate(iso2key(forecast.forecast.date))} (rough range ${km(forecast.forecast.p10_km2)}–${km(forecast.forecast.p90_km2)}), against ${km(forecast.forecast.last_observed_km2)} km² observed on ${fmtDate(iso2key(forecast.forecast.from_date))}.</p>
-        <p class="note">Tested on the last five dates without peeking: area error ${forecast.metrics["tabpfn_3.5"].area_mae_km2} km², vs ${forecast.metrics.persistence.area_mae_km2} km² for "no change" and ${forecast.metrics.gradient_boosting.area_mae_km2} km² for gradient boosting. Only a small gain in a flat drought period: treat as a hint, not a forecast.</p>` : ""}` },
+        <p class="note">Tested on the last five dates without peeking: area error ${forecast.metrics["tabpfn_3.5"].area_mae_km2} km², vs ${forecast.metrics.persistence.area_mae_km2} km² for "no change" and ${forecast.metrics.gradient_boosting.area_mae_km2} km² for gradient boosting. ${forecast.metrics["tabpfn_3.5"].area_mae_km2 < forecast.metrics.persistence.area_mae_km2 ? "Only a small gain" : "No gain over \"no change\" yet"} in a flat drought period: treat it as a hint, not a forecast.</p>` : ""}` },
     { key: "about", title: "About",
       go() {},
       html: () => `<h2>Method and limits</h2>

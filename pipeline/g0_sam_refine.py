@@ -71,7 +71,8 @@ def refine(pred, hh, hv, seed, domain):
 def main(zones):
     torch.set_num_threads(4)
     pred = SAM2ImagePredictor(build_sam2("configs/sam2.1/sam2.1_hiera_b+.yaml", str(CKPT), device="cpu"))
-    stats = {}
+    sf = DATA / "water_sam" / "sam_stats.json"
+    stats = json.load(open(sf)) if sf.exists() else {}
     for z in zones:
         with rasterio.open(DATA / "ancillary" / f"{z}.tif") as a:
             gsw = a.read(4)
@@ -79,6 +80,8 @@ def main(zones):
         domain = binary_dilation(gsw > 0, iterations=10)
         (DATA / "water_sam" / z).mkdir(parents=True, exist_ok=True)
         for f in sorted((DATA / "water" / z).glob("2026*.tif")):
+            if (DATA / "water_sam" / z / f.name).exists() and f.stem in stats.get(z, {}):
+                continue  # resume: already refined
             t = time.time()
             with rasterio.open(f) as r:
                 seed, prof = r.read(1), r.profile
