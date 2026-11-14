@@ -1,0 +1,30 @@
+station,source,type,name,value,unit,ref_date,url
+braila,inhga,ca,Cotă de atenție,560,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+braila,inhga,ci,Cotă de inundație,610,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+braila,afdj,hdc,HNN,627,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+braila,afdj,ldc,ENR,88,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+cernavoda,inhga,ca,Cotă de atenție,500,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+cernavoda,inhga,ci,Cotă de inundație,600,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+cernavoda,afdj,hdc,HNN,612,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+cernavoda,afdj,ldc,ENR,-71,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+galati,inhga,ca,Cotă de atenție,560,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+galati,inhga,ci,Cotă de inundație,600,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+galati,afdj,hdc,HNN,600,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+galati,afdj,ldc,ENR,98,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+harsova,inhga,ca,Cotă de atenție,580,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+harsova,inhga,ci,Cotă de inundație,610,cm,2026-10-28,https://www.edelta.ro/cote-dunare/giurgiu?view=article&id=285:cotele-de-atentie-si-de-inundatie-pentru-principalele-porturi-de-pe-dunare&catid=84
+harsova,afdj,hdc,HNN,653,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+harsova,afdj,ldc,ENR,17,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+isaccea,tulcea-plan,ca,Cotă de atenție,380,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+isaccea,tulcea-plan,ci,Cotă de inundație,508,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+isaccea,tulcea-plan,cp,Cotă de pericol,520,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+isaccea,afdj,hdc,HNN,481,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+isaccea,afdj,ldc,ENR,73,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+sulina,tulcea-plan,ca,Cotă de atenție (CA),90,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+sulina,tulcea-plan,ci,Cotă de inundație (CI),130,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+sulina,tulcea-plan,cp,Cotă de pericol (CP),150,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+tulcea,tulcea-plan,ca,Cotă de atenție,320,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+tulcea,tulcea-plan,ci,Cotă de inundație,410,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+tulcea,tulcea-plan,cp,Cotă de pericol,440,cm,2026-10-24,https://tl.prefectura.mai.gov.ro/wp-content/uploads/sites/20/2022/09/10.-Tabel-Statii-Hidrometrice.pdf
+tulcea,afdj,hdc,HNN,393,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
+tulcea,afdj,ldc,ENR,59,cm,,https://www.afdj.ro/sites/default/files/tablou_cu_datele_caracteristice_ale_statiilor_hidrometrice_.pdf
