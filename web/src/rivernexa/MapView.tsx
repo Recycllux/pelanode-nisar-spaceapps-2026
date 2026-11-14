@@ -112,6 +112,7 @@ export function MapView(p: Props) {
             source: `${z}-${k}`,
             paint: {
               "raster-opacity": 0,
+              "raster-opacity-transition": { duration: 0, delay: 0 },
               "raster-fade-duration": 0,
               "raster-resampling": k === "radar" || k === "comp" ? "linear" : "nearest",
             },

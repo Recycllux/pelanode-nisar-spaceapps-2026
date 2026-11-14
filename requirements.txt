@@ -14,5 +14,4 @@ requests==2.34.2
 scikit-image==0.26.0
 scikit-learn==1.9.0
 scipy==1.18.1
-tabpfn-client==0.8.0
 xarray==2026.9.0
