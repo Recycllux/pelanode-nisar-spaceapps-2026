@@ -328,7 +328,8 @@
         return `<h2>Cernavodă: sandbanks in the channel</h2>
         <p>The gauge fell from ${lv("20260724")} cm on 24 Jul to ${lv("20260817")} cm on 17 Aug (low-water mark ${g.enr_cm} cm). In the colour composite, cyan specks in the river are sandbanks that turned bright as the water dropped.</p>
         <p>At 20 m pixels the change is small (${km(c["20260724"].total_water_km2)} → ${km(c["20260817"].total_water_km2)} km² in the zone), but it sits right in the shipping channel.</p>
-        <p class="note">Data gap: this track has no NISAR acquisition between 24 Jul and 17 Aug.</p>`; } },
+        ${(evidence?.items || []).filter((e) => /Cernavod|reactor/.test(e.title)).map((e) => `<p><b>${fmtDate(iso2key(e.date))}:</b> ${e.text} <a href="${e.url}" target="_blank" rel="noopener">${e.source}</a></p>`).join("")}
+        <p class="note">Data gap: this track has no NISAR acquisition between 24 Jul and 17 Aug; Sentinel-1 in the chart fills it.</p>`; } },
     { key: "balta", title: "Balta Mică",
       go() { focus("balta_mica_brailei"); state.mode = "water"; state.idx = DATES.indexOf(d1); state.swipe = true; },
       html: () => { const b = area.balta_mica_brailei;
@@ -356,9 +357,9 @@
         <ul>
           <li><b>Low inflow.</b> All seven Romanian gauges from Cernavodă to Tulcea fell below their official low-water marks in early July and stayed there <span class="tag real">Real</span>.</li>
           <li><b>Record lows.</b> Isaccea spent ${recordDays} days below the lowest level recorded for that day in 2015–2025 <span class="tag real">Real</span>.</li>
-          ${(evidence?.items || []).map((e) => `<li><b>${e.title}.</b> ${e.text} ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener">source</a>` : ""} <span class="tag real">Real</span></li>`).join("")}
+          ${(evidence?.items || []).map((e) => `<li><b>${fmtDate(iso2key(e.date))}: ${e.title}.</b> ${e.text} <a href="${e.url}" target="_blank" rel="noopener">${e.source}</a></li>`).join("")}
         </ul>
-        <p class="note">Every external figure is linked to its source. River data © DanubeAlert (CC BY 4.0).</p>` },
+        <p class="note">Every external fact is linked to its source${evidence?.checked_by ? `, opened and checked by ${evidence.checked_by.split(" (")[0]}` : ""}. River data © DanubeAlert (CC BY 4.0).</p>` },
     { key: "loop", title: "Close the loop",
       go() { focus("delta"); state.mode = "lost"; showProbes(true); },
       html: () => `<h2>Close the loop: where to send field probes</h2>

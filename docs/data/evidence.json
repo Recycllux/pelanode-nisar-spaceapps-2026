@@ -1,1 +1,29 @@
-{"items": []}
+{
+ "checked_by": "Marilou Suc (team), 15 Nov 2026",
+ "items": [
+  {"title": "Cernavodă Unit 1 shut down", "date": "2026-07-28",
+   "text": "On 27 July Nuclearelectrica announced a controlled shutdown of Unit 1 on 28 July \"due to the very low, unprecedented water level of the Danube caused by severe drought\".",
+   "source": "Nuclearelectrica, BVB current report",
+   "url": "https://nuclearelectrica.ro/ir/wp-content/uploads/sites/3/2026/07/RC-current-report-debit-dunare-bvb.pdf"},
+  {"title": "Riverbed blasting to cool the last reactor", "date": "2026-08-08",
+   "text": "The Ministry of National Defence confirmed 102 military personnel, including navy EOD divers, made a controlled detonation in the Bala branch riverbed to steer water to Cernavodă's remaining cooling intake.",
+   "source": "Romanian Ministry of National Defence, press release 157",
+   "url": "https://english.mapn.ro/cpresa/6832_ministry-of-national-defence-contributes-to-national-efforts-to-safeguard-energy-security"},
+  {"title": "Flow at less than half the August average", "date": "2026-08-31",
+   "text": "Copernicus reported Danube flow at the Romanian border of about 1,600 m³/s against a multiannual August average of about 3,900 m³/s.",
+   "source": "Copernicus / EU Space, Image of the Day",
+   "url": "https://eu-space.europa.eu/components/earth-observation-copernicus/image-of-the-day/low-danube-water-levels-eastern-europe"},
+  {"title": "Shipping effectively blocked", "date": "2026-08-31",
+   "text": "The river captaincy reported larger vessels stationary in ports and small-draft ships passing with difficulty; normal navigation needed another 80 cm to 1 m of water.",
+   "source": "Gândul",
+   "url": "https://www.gandul.ro/actualitate/debit-dunare-scadere-septembrie-2026-navigatie-portile-de-fier-20994905"},
+  {"title": "Fire in dried-out Delta vegetation", "date": "2026-08-18",
+   "text": "About 700 hectares of dry vegetation burned on Babina Island on 17-18 August.",
+   "source": "AGERPRES",
+   "url": "https://agerpres.ro/social/2026/08/18/update-tulcea-pompierii-au-sistat-interventia-in-ostrovul-babina-au-ars-700-hectare-de-vegetatie-usc--1585720"},
+  {"title": "ARBDD restricts fishing and navigation", "date": "2026-10-12",
+   "text": "With the Danube at Tulcea down to 12 cm, ARBDD banned set-net fishing and imposed low-speed navigation on Delta channels, citing grounding risk, bank erosion and harm to habitats and bird colonies.",
+   "source": "Radio România Constanța",
+   "url": "https://www.radioconstanta.ro/2026/10/12/arbdd-anunta-restrictii-pentru-pescari-si-navigatori-in-delta-dunarii-din-cauza-nivelului-scazut-al-apelor/"}
+ ]
+}

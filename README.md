@@ -57,6 +57,14 @@ Data
 - JRC Global Surface Water v1.4 (Pekel et al. 2016, Nature 540, 418–422). https://global-surface-water.appspot.com
 - Basemap: Sentinel-2 cloudless 2016 by EOX IT Services GmbH (CC BY 4.0). Terrain: Mapzen Terrain Tiles on AWS.
 
+Evidence ("Why it changed" panel; links opened and checked by the team)
+- Nuclearelectrica, BVB current report, 2026-07-28: Cernavodă Unit 1 shut down. https://nuclearelectrica.ro/ir/wp-content/uploads/sites/3/2026/07/RC-current-report-debit-dunare-bvb.pdf
+- Romanian Ministry of National Defence, press release 157, 2026-08-08: Riverbed blasting to cool the last reactor. https://english.mapn.ro/cpresa/6832_ministry-of-national-defence-contributes-to-national-efforts-to-safeguard-energy-security
+- Copernicus / EU Space, Image of the Day, 2026-08-31: Flow at less than half the August average. https://eu-space.europa.eu/components/earth-observation-copernicus/image-of-the-day/low-danube-water-levels-eastern-europe
+- Gândul, 2026-08-31: Shipping effectively blocked. https://www.gandul.ro/actualitate/debit-dunare-scadere-septembrie-2026-navigatie-portile-de-fier-20994905
+- AGERPRES, 2026-08-18: Fire in dried-out Delta vegetation. https://agerpres.ro/social/2026/08/18/update-tulcea-pompierii-au-sistat-interventia-in-ostrovul-babina-au-ars-700-hectare-de-vegetatie-usc--1585720
+- Radio România Constanța, 2026-10-12: ARBDD restricts fishing and navigation. https://www.radioconstanta.ro/2026/10/12/arbdd-anunta-restrictii-pentru-pescari-si-navigatori-in-delta-dunarii-din-cauza-nivelului-scazut-al-apelor/
+
 Methods and software
 - Quegan, S. and Yu, J. J. (2001). Filtering of multichannel SAR images. IEEE TGRS 39(11).
 - SAM 2.1, Meta AI (Apache 2.0). https://github.com/facebookresearch/sam2
