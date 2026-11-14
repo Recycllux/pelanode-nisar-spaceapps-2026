@@ -5,6 +5,7 @@ of the datasets/windows we need, instead of downloading ~1.8 GB.
 Authentication to NASA Earthdata is handled by the environment's proxy.
 """
 import io
+import time
 import requests
 
 
@@ -43,10 +44,20 @@ class HTTPRangeFile(io.RawIOBase):
         if i not in self.cache:
             start = i * self.block_size
             end = min(start + self.block_size, self.size) - 1
-            r = self.session.get(self.url, headers={"Range": f"bytes={start}-{end}"}, timeout=120)
-            r.raise_for_status()
-            self.cache[i] = r.content
-            self.bytes_fetched += len(r.content)
+            for attempt in range(6):  # connection resets happen on long pulls
+                try:
+                    r = self.session.get(self.url, headers={"Range": f"bytes={start}-{end}"}, timeout=120)
+                    r.raise_for_status()
+                    data = r.content
+                    if len(data) != end - start + 1:
+                        raise IOError(f"short read {len(data)}")
+                    break
+                except (requests.RequestException, IOError):
+                    if attempt == 5:
+                        raise
+                    time.sleep(2 ** attempt)
+            self.cache[i] = data
+            self.bytes_fetched += len(data)
             if len(self.cache) > 256:  # cap memory at ~1 GB
                 self.cache.pop(next(iter(self.cache)))
         return self.cache[i]
