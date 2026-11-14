@@ -1,0 +1,42 @@
+{
+ "n_cells": 8209,
+ "n_train_all": 944035,
+ "n_train_used": 9000,
+ "years_train": "2016-2024",
+ "tests": {
+  "2025": {
+   "n": 106717,
+   "metrics": {
+    "persistence": {
+     "cell_mae": 0.0268,
+     "area_mae_km2": 33.1
+    },
+    "gradient_boosting": {
+     "cell_mae": 0.029,
+     "area_mae_km2": 23.8
+    },
+    "tabpfn_3.5": {
+     "cell_mae": 0.0278,
+     "area_mae_km2": 19.0
+    }
+   }
+  },
+  "2026": {
+   "n": 215171,
+   "metrics": {
+    "persistence": {
+     "cell_mae": 0.0234,
+     "area_mae_km2": 30.5
+    },
+    "gradient_boosting": {
+     "cell_mae": 0.0335,
+     "area_mae_km2": 41.2
+    },
+    "tabpfn_3.5": {
+     "cell_mae": 0.0318,
+     "area_mae_km2": 20.1
+    }
+   }
+  }
+ }
+}

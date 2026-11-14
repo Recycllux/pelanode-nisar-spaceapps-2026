@@ -24,10 +24,11 @@
     return rows.map((r) => Object.fromEntries(r.split(",").map((v, i) => [keys[i], isNaN(+v) || v === "" ? v : +v])));
   }
 
-  const [manifest, areas, river, probes, evidence, analysis, forecast] = await Promise.all([
+  const [manifest, areas, river, probes, evidence, analysis, forecast, s1, s1fc] = await Promise.all([
     getJSON("data/manifest.json"), getCSV("data/areas.csv"), getJSON("data/river.json"),
     getJSON("data/probes.json", true), getJSON("data/evidence.json", true),
     getJSON("data/analysis.json", true), getJSON("data/forecast.json", true),
+    getJSON("data/s1.json", true), getJSON("data/s1_forecast.json", true),
   ]);
   const DATES = manifest.zones.delta.dates;
   const area = {}; // area[zone][yyyymmdd] = row
@@ -261,6 +262,8 @@
         datasets: [
           { label: "Water, total (km²)", data: wTot, yAxisID: "y", borderColor: "#60a5fa", backgroundColor: "#60a5fa", spanGaps: true, pointRadius: 4, borderWidth: 2 },
           { label: "Water under vegetation (km²)", data: wVeg, yAxisID: "y", borderColor: "#22c55e", backgroundColor: "#22c55e", spanGaps: true, pointRadius: 4, borderWidth: 2 },
+          ...(s1?.series?.[z] ? [{ label: "Open water, Sentinel-1 (km²)", yAxisID: "y", borderColor: "#a78bfa", backgroundColor: "#a78bfa", spanGaps: true, pointRadius: 2, borderWidth: 1.2, borderDash: [2, 2],
+            data: (() => { const S = s1.series[z]; const m = {}; S.dates.forEach((d, i) => { if (!S.flag_wind[i]) m[d] = S.open_water_km2[i]; }); return labels.map((l) => m[l] ?? null); })() }] : []),
           { label: `${gauge[0].toUpperCase() + gauge.slice(1)} level (cm)`, data: pick(st.level_cm), yAxisID: "y1", borderColor: "#e5e7eb", pointRadius: 0, borderWidth: 1.5 },
           { label: "2015–2025 median (cm)", data: pick(st.p50), yAxisID: "y1", borderColor: "#9ca3af", borderDash: [4, 4], pointRadius: 0, borderWidth: 1 },
           ...(st.enr_cm != null ? [{ label: `Low-water mark ${st.enr_cm} cm`, data: labels.map(() => st.enr_cm), yAxisID: "y1", borderColor: "#f87171", borderDash: [6, 3], pointRadius: 0, borderWidth: 1 }] : []),
@@ -282,7 +285,7 @@
     const cv = document.getElementById("chart");
     chart = new Chart(cv, cfg); chart.$gauge = gauge;
     document.getElementById("chart-note").innerHTML =
-      `Red bands: days the gauge was below its official low-water mark. Water areas from NISAR (<span class="tag real">Real</span>), levels from DanubeAlert (<span class="tag real">Real</span>). Correlation, not proof of cause.`;
+      `Red bands: days the gauge was below its official low-water mark. Water areas from NISAR (L-band) and Sentinel-1 (C-band, open water only, windy dates left out) (<span class="tag real">Real</span>), levels from DanubeAlert (<span class="tag real">Real</span>). Correlation, not proof of cause.`;
   }
   function updateChartCursor() { if (chart) chart.update("none"); }
   zoneSel.addEventListener("change", () => buildChart(zoneSel.value));
@@ -341,7 +344,12 @@
         <p>The chart below puts the NISAR water area next to the DanubeAlert gauge. Pick a zone to compare.</p>
         <p>Water under the Delta's reeds collapses once Isaccea drops below its low-water mark in early July, and stays low.</p>
         ${best ? `<p><b>Lag:</b> the reed water matches the Isaccea level from about <b>${best.lag_days} days earlier</b> best (Spearman ρ = ${best.rho_under_veg.toFixed(2)}, 11 dates). A falling gauge gives roughly a week of warning. <span class="tag real">Real</span></p>` : ""}
-        ${ft ? `<p><b>Flooding threshold map</b> (map mode "Flood threshold"): for ${km(ft.km2)} km² of the Delta we can read the Isaccea level each spot needs to stay wet. Half of it dries below ${Math.round(ft.median_cm)} cm. <span class="tag real">Real</span></p>` : ""}`; } },
+        ${s1 ? (() => { const Y = Object.entries(s1.years).map(([y, r]) => [+y, r.median_km2, r.min_level_cm]); const max = Math.max(...Y.map((r) => r[1]));
+          const rank = [...Y].sort((a, b) => a[1] - b[1]).findIndex((r) => r[0] === 2026) + 1;
+          return `<p><b>Ten years of Sentinel-1:</b> typical open water in the Delta, June–November. 2026 ranks ${rank === 1 ? "lowest" : "#" + rank} of ${Y.length} years. Open water shrinks only a little; the big loss is under the reeds, which only L-band sees. <span class="tag real">Real</span></p>
+          <div style="display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;font-size:12px;align-items:center">${Y.map(([y, v, l]) => `<span>${y}</span><span style="display:block;height:9px;border-radius:3px;background:${y === 2026 ? "#f87171" : y === 2022 ? "#fbbf24" : "#60a5fa"};width:${Math.round(100 * (v - 700) / (max - 700))}%"></span><span>${km(v)} km² · min ${l} cm</span>`).join("")}</div>
+          <p class="note">Median of non-windy Sentinel-1 dates per season; "min" is the lowest Isaccea level on those dates. 2022 (amber) was the previous big drought.</p>`; })() : ""}
+        ${ft ? `<p><b>Flooding threshold map</b> (map mode "Flood threshold"): for ${km(ft.km2)} km² of the Delta we can read the Isaccea level each spot needs to stay wet. Half of that area needs at least ${Math.round(ft.median_cm)} cm to be wet, a level Isaccea has not reached since early July. <span class="tag real">Real</span></p>` : ""}`; } },
     { key: "why", title: "Why it changed",
       go() { state.mode = "lost"; flyCorridor(); },
       html: () => `<h2>Why it changed</h2>
@@ -359,11 +367,13 @@
         <p class="note">The probe network does not exist yet. It shows how ARBDD could act on the radar signal. <span class="tag future">Future</span></p>
         ${forecast ? `<h3 style="margin-top:12px">Next 12 days <span class="tag future">Future</span></h3>
         <p>A TabPFN-3.5 model trained on the 2026 NISAR series expects about <b>${km(forecast.forecast.p50_km2)} km²</b> of water under the Delta's vegetation on ${fmtDate(iso2key(forecast.forecast.date))} (rough range ${km(forecast.forecast.p10_km2)}–${km(forecast.forecast.p90_km2)}), against ${km(forecast.forecast.last_observed_km2)} km² observed on ${fmtDate(iso2key(forecast.forecast.from_date))}.</p>
-        <p class="note">Tested on the last five dates without peeking: area error ${forecast.metrics["tabpfn_3.5"].area_mae_km2} km², vs ${forecast.metrics.persistence.area_mae_km2} km² for "no change" and ${forecast.metrics.gradient_boosting.area_mae_km2} km² for gradient boosting. ${forecast.metrics["tabpfn_3.5"].area_mae_km2 < forecast.metrics.persistence.area_mae_km2 ? "Only a small gain" : "No gain over \"no change\" yet"} in a flat drought period: treat it as a hint, not a forecast.</p>` : ""}` },
+        <p class="note">Tested on the last five dates without peeking: area error ${forecast.metrics["tabpfn_3.5"].area_mae_km2} km², vs ${forecast.metrics.persistence.area_mae_km2} km² for "no change" and ${forecast.metrics.gradient_boosting.area_mae_km2} km² for gradient boosting. ${forecast.metrics["tabpfn_3.5"].area_mae_km2 < forecast.metrics.persistence.area_mae_km2 ? "Only a small gain" : "No gain over \"no change\" yet"} in a flat drought period: treat it as a hint, not a forecast.</p>` : ""}
+        ${s1fc?.tests?.["2026"] ? `<p class="note"><b>Trained on ten years of Sentinel-1</b> (2016–2024), the same TabPFN-3.5 setup predicts Delta open water 6–12 days ahead with an area error of ${s1fc.tests["2026"].metrics["tabpfn_3.5"].area_mae_km2} km² in 2026 and ${s1fc.tests["2025"].metrics["tabpfn_3.5"].area_mae_km2} km² in 2025, against ${s1fc.tests["2026"].metrics.persistence.area_mae_km2} and ${s1fc.tests["2025"].metrics.persistence.area_mae_km2} km² for "no change". More history makes the model useful. <span class="tag future">Future</span></p>` : ""}` },
     { key: "about", title: "About",
       go() {},
       html: () => `<h2>Method and limits</h2>
         <ul>
+          <li><b>Sentinel-1:</b> NASA OPERA RTC-S1 (C-band, 30 m, track 036), 2016–2026, open water only; used to fill NISAR's gap, check its maps and give ten years of context.</li>
           <li><b>Data:</b> NISAR L2 GCOV (ASF DAAC), track 065 descending, frames 065 + 066, 11 dates 18 Jun – 28 Oct 2026, HH + HV at 20 m. Dates before 28 Oct are Provisional.</li>
           <li><b>Open water:</b> per-date reference to permanent water (JRC Global Surface Water), inside the area that has ever been water, then refined with SAM 2.1.</li>
           <li><b>Water under vegetation:</b> HH double bounce (bright HH, high HH/HV ratio) in reeds and floodplain forest (ESA WorldCover), below 5 m above drainage (HAND).</li>

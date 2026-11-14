@@ -59,3 +59,16 @@ def test_forecast_labelled_future_and_validated():
     assert len(f["test_dates"]) == 5 and all(d["date"] > "2026-08-29" for d in f["test_dates"])
     fc = f["forecast"]
     assert fc["p10_km2"] <= fc["p50_km2"] <= fc["p90_km2"]
+
+
+def test_sentinel1_products():
+    s = json.load(open(D / "s1.json"))
+    years = {int(y) for y in s["years"]}
+    assert set(range(2016, 2027)) <= years
+    d = s["series"]["delta"]
+    assert len(d["dates"]) == len(d["open_water_km2"]) == len(d["flag_wind"])
+    assert sum(x >= "2026-06-01" for x in d["dates"]) >= 25  # 6-day revisit in 2026
+    dv = [v for v in s["validation"] if v["zone"] == "delta"]
+    assert len(dv) >= 5 and sorted(v["iou"] for v in dv)[len(dv) // 2] > 0.6
+    f = json.load(open(D / "s1_forecast.json"))
+    assert set(f["tests"]) == {"2025", "2026"}
