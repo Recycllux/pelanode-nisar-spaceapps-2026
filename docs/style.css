@@ -106,3 +106,7 @@ h1, h2, h3 { margin: 0; }
 .hud { bottom: 34px; }
 .maplibregl-ctrl-top-right { top: 44px; }
 .chart-box { position: relative; height: 270px; }
+.logo-pill { position: relative; flex: none; height: 46px; background: #fff; border-radius: 10px; padding: 3px 8px; display: flex; align-items: center; }
+.logo-pill img { height: 40px; width: auto; display: block; }
+.ai-mark { position: absolute; right: 4px; bottom: 1px; font-size: 8.5px; line-height: 1; color: #334155; background: #ffffffcc; padding: 1px 3px; border-radius: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
