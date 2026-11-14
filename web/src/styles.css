@@ -92,6 +92,7 @@
     color: var(--foreground);
     font-family: var(--font-sans);
     font-size: 15px;
+    font-size-adjust: from-font; /* fallback font keeps the web font's x-height: less reflow when fonts swap in */
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
@@ -100,12 +101,13 @@
 }
 
 @utility num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-@utility text-lost { color: var(--lost-text); }
-@utility text-veg { color: var(--veg-text); }
+/* "-ink" so they do not collide with the text-lost / text-veg utilities Tailwind generates from @theme (map colours, too dark for text) */
+@utility text-lost-ink { color: var(--lost-text); }
+@utility text-veg-ink { color: var(--veg-text); }
 @utility scroll-x { overflow-x: auto; scrollbar-width: thin; }
 
 /* ---------- layout ---------- */
-.app { min-height: 100vh; display: flex; flex-direction: column; }
+.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
 .masthead {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--background);
@@ -125,7 +127,7 @@
 .story-col { padding: 1.25rem 1.25rem 2rem; min-width: 0; }
 
 @media (min-width: 1024px) {
-  .app { height: 100vh; overflow: hidden; }
+  .app { height: 100vh; height: 100dvh; overflow: hidden; }
   .atlas { flex: 1; min-height: 0; display: grid; grid-template-columns: 420px 1fr; }
   .story-col { order: -1; overflow-y: auto; border-right: 1px solid var(--border); padding: 1.25rem 1.5rem 2.5rem; }
   .map-col { min-height: 0; }
@@ -135,7 +137,7 @@
 }
 
 /* ---------- map ---------- */
-.map-wrap { position: relative; flex: 1; min-height: 55vh; overflow: hidden; }
+.map-wrap { position: relative; flex: 1; min-height: 55vh; min-height: 55svh; overflow: hidden; }
 @media (min-width: 1024px) { .map-wrap { min-height: 0; } }
 .map-layer { position: absolute; inset: 0; }
 .swipe-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid var(--foreground); z-index: 3; }
@@ -174,9 +176,9 @@
   border-radius: 6px; min-height: 34px; padding: 0 12px;
   transition: background-color 120ms, border-color 120ms, color 120ms;
 }
-.seg button:hover:not([aria-checked="true"]), .switch:hover:not(:disabled) { background: var(--btn-hover); border-color: var(--btn-edge-hover); }
+.seg button:hover:not([aria-pressed="true"]), .switch:hover:not(:disabled) { background: var(--btn-hover); border-color: var(--btn-edge-hover); }
 .seg button:active, .switch:active:not(:disabled) { transform: translateY(1px); }
-.seg button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-foreground); font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-foreground); font-weight: 600; }
 .switch { display: inline-flex; align-items: center; gap: 8px; }
 .switch:disabled { opacity: 0.45; cursor: not-allowed; }
 .switch-track { position: relative; width: 28px; height: 16px; border-radius: 999px; background: var(--btn-well); border: 1px solid var(--btn-edge-hover); flex-shrink: 0; }
@@ -199,7 +201,7 @@
 .date-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 12.5px; margin-top: 2px; }
 .gap-note { color: var(--sim); font-size: 12px; }
 
-.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.9rem; font-size: 12px; color: var(--foreground); border-top: 1px solid var(--ink-line); padding-top: 0.5rem; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: 0.3rem 0.9rem; min-block-size: calc(2lh + 0.8rem); /* room for two lines, so switching modes does not move the map */ font-size: 12px; color: var(--foreground); border-top: 1px solid var(--ink-line); padding-top: 0.5rem; }
 .legend > span { display: inline-flex; align-items: center; gap: 6px; }
 .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
 .swatch-steps { display: inline-flex; height: 10px; border: 1px solid var(--ink-line); flex-shrink: 0; }
@@ -282,7 +284,7 @@
 .maplibregl-ctrl-group { border-radius: var(--radius); box-shadow: none !important; border: 1px solid var(--ink-line); }
 .maplibregl-ctrl-attrib { font-size: 10.5px; }
 .maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib.maplibregl-compact { background: var(--ink) !important; color: var(--muted-foreground); border: 1px solid var(--ink-line); }
-.maplibregl-ctrl-attrib a { color: var(--foreground) !important; }
+.maplibregl-ctrl-attrib a { color: var(--foreground) !important; text-decoration: underline; }
 .maplibregl-ctrl-attrib-button { filter: invert(1); background-color: transparent !important; }
 .story .num, .counter-sub .num, figcaption .num { font-family: inherit; font-variant-numeric: tabular-nums; }
 @media (max-width: 767px) {
