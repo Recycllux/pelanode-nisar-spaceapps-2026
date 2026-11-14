@@ -62,9 +62,33 @@ export function YearRanking({ ranking }: { ranking: R }) {
   }, [rows, axisMin]);
 
   return (
-    <div className="ranking-box" role="img"
-      aria-label={`Median Sentinel-1 open water in the Delta per season, ${rows[0]?.year}–${rows.at(-1)?.year}`}>
-      <canvas ref={cv} />
-    </div>
+    <>
+      <div className="ranking-box" role="img"
+        aria-label={`Median Sentinel-1 open water in the Delta per season, ${rows[0]?.year}–${rows.at(-1)?.year}. The same figures are in the data table below.`}>
+        <canvas ref={cv} />
+      </div>
+      <details className="data-details">
+        <summary>Show data</summary>
+        <table className="data-table">
+          <caption>Median Sentinel-1 open water in the Delta per season{ranking.rank != null ? `; 2026 ranks ${ranking.rank} of ${ranking.n} (1 = least water)` : ""}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Season</th>
+              <th scope="col">Median open water (km²)</th>
+              <th scope="col">Lowest river level (cm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.year}>
+                <th scope="row">{r.year}</th>
+                <td>{num(r.median)}</td>
+                <td>{r.minLevel != null ? num(r.minLevel) : "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+    </>
   );
 }

@@ -3,7 +3,7 @@ import type { Plugin } from "chart.js";
 import { Chart } from "./charts";
 import { COLORS, ZONES, type ZoneKey } from "./config";
 import { s1OpenWater, type Data } from "./data";
-import { fmtIso, iso2key, key2iso } from "./format";
+import { fmtDate, fmtIso, iso2key, key2iso, num } from "./format";
 
 export function WaterChart({ data, zone, dateKey }: { data: Data; zone: ZoneKey; dateKey: string }) {
   const cv = useRef<HTMLCanvasElement>(null);
@@ -100,9 +100,50 @@ export function WaterChart({ data, zone, dateKey }: { data: Data; zone: ZoneKey;
   useEffect(() => { chart.current?.update("none"); }, [dateKey]);
 
   if (!zm || !st) return null;
+  const gName = zm.gauge.charAt(0).toUpperCase() + zm.gauge.slice(1);
+  const A = data.area[zone] ?? {};
+  const enr = st.enr_cm != null ? Number(st.enr_cm) : null;
+  const level = (iso: string) => {
+    const i = st.dates.indexOf(iso);
+    return i >= 0 ? st.level_cm[i] ?? null : null;
+  };
   return (
-    <div className="chart-box" role="img" aria-label={`Water area and ${zm.gauge} river level, ${ZONES[zone].name}, from 1 June 2026`}>
-      <canvas ref={cv} />
-    </div>
+    <>
+      <div className="chart-box" role="img" aria-label={`Water area and ${zm.gauge} river level, ${ZONES[zone].name}, from 1 June 2026. The same figures are in the data table below.`}>
+        <canvas ref={cv} />
+      </div>
+      {/* Text alternative for the canvas chart: one row per NISAR date. */}
+      <details className="data-details">
+        <summary>Show data</summary>
+        <table className="data-table">
+            <caption>NISAR water area and {gName} river level, {ZONES[zone].name}</caption>
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Total water (km²)</th>
+                <th scope="col">Under vegetation (km²)</th>
+                <th scope="col">{gName} level (cm)</th>
+                {enr != null && <th scope="col">Below low-water mark</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {zm.dates.map((d) => {
+                const r = A[d];
+                const l = level(key2iso(d));
+                return (
+                  <tr key={d}>
+                    <th scope="row">{fmtDate(d)} {d.slice(0, 4)}</th>
+                    <td>{r ? num(r.total_water_km2) : "–"}</td>
+                    <td>{r ? num(r.under_vegetation_km2) : "–"}</td>
+                    <td>{l != null ? num(l) : "–"}</td>
+                    {enr != null && <td>{l != null ? (l < enr ? "Yes" : "No") : "–"}</td>}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        {enr != null && <p className="note">Low-water mark at {gName}: {num(enr)} cm.</p>}
+      </details>
+    </>
   );
 }
