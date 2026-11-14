@@ -357,7 +357,7 @@
         <ul>
           <li><b>Low inflow.</b> All seven Romanian gauges from Cernavodă to Tulcea fell below their official low-water marks in early July and stayed there <span class="tag real">Real</span>.</li>
           <li><b>Record lows.</b> Isaccea spent ${recordDays} days below the lowest level recorded for that day in 2015–2025 <span class="tag real">Real</span>.</li>
-          ${(evidence?.items || []).map((e) => `<li><b>${fmtDate(iso2key(e.date))}: ${e.title}.</b> ${e.text} <a href="${e.url}" target="_blank" rel="noopener">${e.source}</a></li>`).join("")}
+          ${(evidence?.items || []).map((e) => `<li><b>${fmtDate(iso2key(e.date))}: ${e.title}.</b> ${e.text} <a href="${e.url}" target="_blank" rel="noopener">${e.source}</a>${e.also_url ? `, <a href="${e.also_url}" target="_blank" rel="noopener">${e.also_source}</a>` : ""}</li>`).join("")}
         </ul>
         <p class="note">Every external fact is linked to its source${evidence?.checked_by ? `, opened and checked by ${evidence.checked_by.split(" (")[0]}` : ""}. River data © DanubeAlert (CC BY 4.0).</p>` },
     { key: "loop", title: "Close the loop",

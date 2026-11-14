@@ -64,6 +64,8 @@ Evidence ("Why it changed" panel; links opened and checked by the team)
 - Gândul, 2026-08-31: Shipping effectively blocked. https://www.gandul.ro/actualitate/debit-dunare-scadere-septembrie-2026-navigatie-portile-de-fier-20994905
 - AGERPRES, 2026-08-18: Fire in dried-out Delta vegetation. https://agerpres.ro/social/2026/08/18/update-tulcea-pompierii-au-sistat-interventia-in-ostrovul-babina-au-ars-700-hectare-de-vegetatie-usc--1585720
 - Radio România Constanța, 2026-10-12: ARBDD restricts fishing and navigation. https://www.radioconstanta.ro/2026/10/12/arbdd-anunta-restrictii-pentru-pescari-si-navigatori-in-delta-dunarii-din-cauza-nivelului-scazut-al-apelor/
+- mispeces, 2026-09-01: Fish farms hit across the Danube basin. https://www.mispeces.com/en/news/Drought-turns-access-to-water-into-a-production-risk-for-European-freshwater-aquaculture/
+- Radio Moldova, 2026-08-30: Central Europe drought devastates fish farms. https://radiomoldova.md/p/84094
 
 Methods and software
 - Quegan, S. and Yu, J. J. (2001). Filtering of multichannel SAR images. IEEE TGRS 39(11).
