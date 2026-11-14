@@ -41,6 +41,10 @@ const baseStyle = (): StyleSpecification => ({
   ],
 });
 
+/** 1×1 transparent PNG: every overlay starts as this and gets its real image only when a mode shows it. */
+const BLANK =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 type Props = {
@@ -87,22 +91,24 @@ export function MapView(p: Props) {
     const b = mk(bRef.current!);
     b.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     b.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: OPERA_CREDIT }), "bottom-right");
+    // Start collapsed (the "i" button opens it): avoids a late layout shift and keeps the map clear on phones.
+    b.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
     maps.current = { a, b };
 
     const addLayers = (map: MLMap) => {
       for (const z of ZONE_KEYS) {
         const m = manifest.zones[z];
         if (!m) continue;
-        const d0 = m.dates[0];
         const rc = (m.radar_coordinates ?? m.coordinates) as never;
         const c = m.coordinates as never;
-        map.addSource(`${z}-radar`, { type: "image", url: dataUrl(`${z}/${d0}_hh.webp`), coordinates: rc });
-        map.addSource(`${z}-class`, { type: "image", url: dataUrl(`${z}/${d0}_class.png`), coordinates: c });
-        map.addSource(`${z}-lost`, { type: "image", url: dataUrl(`${z}/lost.png`), coordinates: c });
-        map.addSource(`${z}-comp`, { type: "image", url: dataUrl(`${z}/composite.webp`), coordinates: rc });
+        // Sources start blank; the layer effect below loads only the images the current mode shows.
+        map.addSource(`${z}-radar`, { type: "image", url: BLANK, coordinates: rc });
+        map.addSource(`${z}-class`, { type: "image", url: BLANK, coordinates: c });
+        map.addSource(`${z}-lost`, { type: "image", url: BLANK, coordinates: c });
+        map.addSource(`${z}-comp`, { type: "image", url: BLANK, coordinates: rc });
         const keys = ["radar", "comp", "class", "lost"];
         if (z === "delta") {
-          map.addSource(`${z}-flood`, { type: "image", url: dataUrl(`${z}/flood_threshold.png`), coordinates: c });
+          map.addSource(`${z}-flood`, { type: "image", url: BLANK, coordinates: c });
           keys.push("flood");
         }
         for (const k of keys) {
@@ -128,7 +134,9 @@ export function MapView(p: Props) {
 
     let loaded = 0;
     for (const m of [a, b]) {
-      m.on("load", () => {
+      // Wait for the style only, not for "load": "load" also waits for basemap tiles, so a slow or
+      // blocked tile server (EOX, AWS terrain) used to keep every NISAR overlay from appearing.
+      m.once("style.load", () => {
         addLayers(m);
         if (++loaded === 2) {
           b.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
@@ -200,21 +208,29 @@ export function MapView(p: Props) {
           urls.current.set(k, url);
           (map.getSource(src) as ImageSource).updateImage({ url, coordinates: coords as never });
         };
-        set(`${z}-radar`, dataUrl(`${z}/${d}_${p.pol}.webp`), m.radar_coordinates ?? m.coordinates);
-        set(`${z}-class`, dataUrl(`${z}/${d}_class.png`), m.coordinates);
-        for (const [k, v] of Object.entries(OPACITY[p.mode]))
+        const op = OPACITY[p.mode];
+        const rc = m.radar_coordinates ?? m.coordinates;
+        if (op["radar"]) set(`${z}-radar`, dataUrl(`${z}/${d}_${p.pol}.webp`), rc);
+        if (op["class"]) set(`${z}-class`, dataUrl(`${z}/${d}_class.png`), m.coordinates);
+        if (op["lost"]) set(`${z}-lost`, dataUrl(`${z}/lost.png`), m.coordinates);
+        if (op["comp"]) set(`${z}-comp`, dataUrl(`${z}/composite.webp`), rc);
+        if (op["flood"] && map.getSource(`${z}-flood`)) set(`${z}-flood`, dataUrl(`${z}/flood_threshold.png`), m.coordinates);
+        for (const [k, v] of Object.entries(op))
           if (map.getLayer(`${z}-${k}`)) map.setPaintProperty(`${z}-${k}`, "raster-opacity", v);
       }
     };
     apply(maps.current.b, "b", p.afterKey);
-    apply(maps.current.a, "a", p.beforeKey);
-  }, [ready, p.mode, p.pol, p.afterKey, p.beforeKey, p.data]);
+    // The "before" map is only visible while swipe compare is on; don't fetch its images until then.
+    if (p.swipeOn) apply(maps.current.a, "a", p.beforeKey);
+  }, [ready, p.mode, p.pol, p.afterKey, p.beforeKey, p.swipeOn, p.data]);
 
   useEffect(() => {
     if (!ready || !maps.current) return;
-    for (const m of [maps.current.a, maps.current.b])
-      m.setTerrain(p.terrain ? { source: "dem", exaggeration: 6 } : null);
-  }, [ready, p.terrain]);
+    const t = { source: "dem", exaggeration: 6 };
+    maps.current.b.setTerrain(p.terrain ? t : null);
+    // The hidden "before" map only needs terrain (and its DEM tiles) while swipe compare shows it.
+    maps.current.a.setTerrain(p.terrain && p.swipeOn ? t : null);
+  }, [ready, p.terrain, p.swipeOn]);
 
   useEffect(() => {
     if (!ready || !maps.current) return;
@@ -251,7 +267,7 @@ export function MapView(p: Props) {
 
   return (
     <div ref={wrapRef} className="map-wrap">
-      <div ref={aRef} className="map-layer" aria-hidden={!p.swipeOn} />
+      <div ref={aRef} className="map-layer" inert={!p.swipeOn} aria-hidden={!p.swipeOn} />
       <div
         ref={bRef}
         className="map-layer"
@@ -268,6 +284,7 @@ export function MapView(p: Props) {
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(swipeX * 100)}
+              aria-valuetext={`${Math.round(swipeX * 100)}% before, ${100 - Math.round(swipeX * 100)}% after`}
               onKeyDown={onKey}
               onPointerDown={(e) => { dragging.current = true; e.currentTarget.setPointerCapture(e.pointerId); }}
               onPointerMove={(e) => dragging.current && moveTo(e.clientX)}

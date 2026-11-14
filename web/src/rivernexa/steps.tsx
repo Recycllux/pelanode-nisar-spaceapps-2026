@@ -18,16 +18,21 @@ export type Step = { key: string; title: string; apply: StepApply; Body: (p: { d
 const Note = ({ children }: { children: React.ReactNode }) => <p className="note">{children}</p>;
 
 /** Source link(s) for one evidence item, labelled with the publisher name. */
+/** Only https links from the data files become clickable (blocks javascript: and similar URLs). */
+const safeUrl = (u?: string) => (u && /^https:\/\//i.test(u) ? u : undefined);
+
 function Sources({ e }: { e: EvidenceItem }) {
+  const url = safeUrl(e.url);
+  const also = safeUrl(e.also_url);
   return (
     <>
-      {e.url && (
-        <a href={e.url} target="_blank" rel="noopener noreferrer">{e.source ?? "source"}</a>
+      {url && (
+        <a href={url} target="_blank" rel="noopener noreferrer">{e.source ?? "source"}</a>
       )}
-      {e.also_url && (
+      {also && (
         <>
           ,{" "}
-          <a href={e.also_url} target="_blank" rel="noopener noreferrer">{e.also_source ?? "source"}</a>
+          <a href={also} target="_blank" rel="noopener noreferrer">{e.also_source ?? "source"}</a>
         </>
       )}
     </>
@@ -53,7 +58,7 @@ function Overview({ d }: { d: Data }) {
           </div>
           <figcaption>
             Water under the Delta's reeds, {fmtDate(h.before)} → {fmtDate(h.after)}:{" "}
-            <span className="num text-lost">{signed(-h.lost)} km² ({MINUS}{h.pct}%)</span> <Tag kind="real" />
+            <span className="num text-lost-ink">{signed(-h.lost)} km² ({MINUS}{h.pct}%)</span> <Tag kind="real" />
           </figcaption>
         </figure>
       )}

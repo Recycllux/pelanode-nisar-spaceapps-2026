@@ -13,7 +13,9 @@ export default function App() {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    loadAll().then(setData).catch((e) => setError(String(e?.message ?? e)));
+    // Wait (briefly) for the web fonts too: the control bar wraps differently in the fallback font,
+    // and swapping fonts after the first paint moved it by ~60 px (layout shift).
+    Promise.all([loadAll(), fontsReady(1200)]).then(([d]) => setData(d)).catch((e) => setError(String(e?.message ?? e)));
   }, []);
 
   return (
@@ -34,7 +36,7 @@ function Header() {
   return (
     <header className="masthead">
       <div className="brand">
-        <img src={`${ASSET_BASE}logo.png`} alt="RiverNexa logo" className="brand-logo" />
+        <img src={`${ASSET_BASE}logo.webp`} alt="RiverNexa" className="brand-logo" width={72} height={32} />
         <span className="ai-label" title="This logo was made with an AI image tool">AI-generated</span>
         <h1 className="sr-only">RiverNexa</h1>
         <p className="brand-sub">NISAR L-band radar shows where the Lower Danube lost its water in 2026</p>
@@ -50,16 +52,26 @@ function Header() {
 
 function Atlas({ data }: { data: Data }) {
   const DATES = data.manifest.zones.delta.dates;
-  const [step, setStep] = useState(0);
-  const [mode, setMode] = useState<Mode>("water");
+  // Resolve the opening step (?step=…) before the first render, so the first paint already shows
+  // that step's layer and legend instead of switching after mount (that switch caused layout shift).
+  const [init] = useState(() => {
+    const key = new URLSearchParams(window.location.search).get("step");
+    const i = Math.max(0, STEPS.findIndex((s) => s.key === key));
+    const a = STEPS[i]!.apply;
+    const k = a.dateKey === "after" ? data.manifest.zones.delta.after : a.dateKey;
+    const j = k ? DATES.indexOf(k) : -1;
+    return { i, a, idx: j >= 0 ? j : Math.max(0, DATES.indexOf(OPENING_DATE)) };
+  });
+  const [step, setStep] = useState(init.i);
+  const [mode, setMode] = useState<Mode>(init.a.mode ?? "water");
   const [pol, setPol] = useState<Pol>("hh");
-  const [idx, setIdx] = useState(Math.max(0, DATES.indexOf(OPENING_DATE)));
-  const [zone, setZone] = useState<ZoneKey>("delta");
-  const [chartZone, setChartZone] = useState<ZoneKey>("delta");
-  const [swipe, setSwipe] = useState(false);
+  const [idx, setIdx] = useState(init.idx);
+  const [zone, setZone] = useState<ZoneKey>(init.a.zone ?? "delta");
+  const [chartZone, setChartZone] = useState<ZoneKey>(init.a.chartZone ?? "delta");
+  const [swipe, setSwipe] = useState(!!init.a.swipe);
   const [terrain, setTerrain] = useState(true);
-  const [probes, setProbes] = useState(false);
-  const [fly, setFly] = useState<FlyReq>({ n: 0, target: "corridor" });
+  const [probes, setProbes] = useState(!!init.a.probes);
+  const [fly, setFly] = useState<FlyReq>(init.a.fly ? { n: 1, target: init.a.fly } : { n: 0, target: "corridor" });
 
   const goStep = useCallback(
     (i: number) => {
@@ -80,11 +92,6 @@ function Atlas({ data }: { data: Data }) {
     [data, DATES],
   );
 
-  useEffect(() => {
-    const key = new URLSearchParams(window.location.search).get("step");
-    goStep(Math.max(0, STEPS.findIndex((s) => s.key === key)));
-  }, [goStep]);
-
   const afterKey = DATES[idx] ?? DATES[0]!;
   const zm = data.manifest.zones[zone];
   const beforeKey = zm.before;
@@ -93,10 +100,15 @@ function Atlas({ data }: { data: Data }) {
   const counterAfter = mode === "lost" || mode === "composite" || mode === "flood" ? zm.after : afterKey;
   const change = zoneChange(data.area, zone, beforeKey, counterAfter);
   const Body = STEPS[step]!.Body;
+  // One debounced announcement instead of a live region that speaks on every slider step.
+  const said = useDebounced(
+    change ? `${signed(change.dv)} square kilometres of water in ${ZONES[zone].name}, ${fmtDate(beforeKey)} to ${fmtDate(counterAfter)}` : "",
+    700,
+  );
 
   return (
     <main className="atlas">
-      <section className="map-col" aria-label="Map">
+      <section className="map-col" aria-label="Map and controls">
         <MapView
           data={data}
           mode={mode}
@@ -112,8 +124,8 @@ function Atlas({ data }: { data: Data }) {
           afterLabel={`${fmtDate(afterKey)} ▶`}
         >
           {change && (
-            <div className="counter" aria-live="polite">
-              <div className={`counter-num num ${change.dv < 0 ? "text-lost" : "text-veg"}`}>
+            <div className="counter">
+              <div className={`counter-num num ${change.dv < 0 ? "text-lost-ink" : "text-veg-ink"}`}>
                 {signed(change.dv)} <span className="counter-unit">km²</span>
               </div>
               <p className="counter-sub">
@@ -126,15 +138,16 @@ function Atlas({ data }: { data: Data }) {
               </p>
             </div>
           )}
+          <p className="sr-only" aria-live="polite">{said}</p>
         </MapView>
 
         <div className="controlbar">
           <div className="controlbar-row controls">
             <div className="ctl-group">
               <span className="ctl-label" id="lbl-layer">Map layer</span>
-              <div className="seg seg-layer" role="radiogroup" aria-labelledby="lbl-layer">
+              <div className="seg seg-layer" role="group" aria-labelledby="lbl-layer">
                 {MODES.map((m) => (
-                  <button key={m.key} type="button" role="radio" aria-checked={mode === m.key} onClick={() => setMode(m.key)}>
+                  <button key={m.key} type="button" aria-pressed={mode === m.key} onClick={() => setMode(m.key)}>
                     {m.label}
                   </button>
                 ))}
@@ -142,9 +155,9 @@ function Atlas({ data }: { data: Data }) {
             </div>
             <div className="ctl-group">
               <span className="ctl-label" id="lbl-pol">Radar band</span>
-              <div className="seg" role="radiogroup" aria-labelledby="lbl-pol">
+              <div className="seg" role="group" aria-labelledby="lbl-pol">
                 {(["hh", "hv"] as Pol[]).map((p) => (
-                  <button key={p} type="button" role="radio" aria-checked={pol === p} onClick={() => setPol(p)}>
+                  <button key={p} type="button" aria-pressed={pol === p} onClick={() => setPol(p)}>
                     {p.toUpperCase()}
                   </button>
                 ))}
@@ -240,4 +253,21 @@ function Atlas({ data }: { data: Data }) {
       </aside>
     </main>
   );
+}
+
+function useDebounced<T>(value: T, ms: number): T {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+}
+
+/** Resolve once the above-the-fold fonts have loaded, or after `ms` at most (never blocks for long). */
+function fontsReady(ms: number): Promise<void> {
+  if (!("fonts" in document)) return Promise.resolve();
+  const faces = ['400 15px "IBM Plex Sans"', '500 13px "IBM Plex Sans"', '600 13px "IBM Plex Sans"', '500 10px "IBM Plex Mono"', '600 28px "Source Serif 4"'];
+  const all = Promise.all(faces.map((f) => document.fonts.load(f))).then(() => undefined, () => undefined);
+  return Promise.race([all, new Promise<void>((r) => setTimeout(r, ms))]);
 }
