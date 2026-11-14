@@ -1,0 +1,7 @@
+# Separate environment for step G0 (SAM 2.1 refinement, CPU)
+torch
+torchvision
+sam2  # https://github.com/facebookresearch/sam2 (checkpoint sam2.1_hiera_base_plus.pt from dl.fbaipublicfiles.com)
+rasterio
+scipy
+numpy

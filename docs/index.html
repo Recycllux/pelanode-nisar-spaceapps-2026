@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RiverNexa</title>
+<meta name="description" content="NISAR L-band radar shows where the Lower Danube lost water in the 2026 drought, including water hidden under reeds.">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div>
+      <h1>RiverNexa</h1>
+      <p>NISAR L-band radar shows where the Lower Danube lost its water in 2026</p>
+    </div>
+  </div>
+  <div class="top-badges">
+    <span class="badge real" title="Measured by NISAR or river gauges">Real</span>
+    <span class="badge sim" title="Illustration of a future workflow">Simulated</span>
+    <span class="badge future" title="Model output, not yet observed">Future</span>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="panel" id="panel">
+    <nav class="steps" id="steps" aria-label="Story"></nav>
+    <section class="card" id="story"></section>
+    <section class="card chart-card" id="chart-card">
+      <div class="chart-head">
+        <h3 id="chart-title">Water area vs river level</h3>
+        <select id="chart-zone" aria-label="Zone for chart"></select>
+      </div>
+      <div class="chart-box"><canvas id="chart"></canvas></div>
+      <p class="note" id="chart-note"></p>
+    </section>
+  </aside>
+
+  <section class="mapwrap" id="mapwrap">
+    <div id="map-before" class="map"></div>
+    <div id="map-after" class="map"></div>
+    <div class="swipe" id="swipe" hidden><div class="swipe-handle" id="swipe-handle" role="slider" aria-label="Swipe between dates" tabindex="0"></div></div>
+    <div class="swipe-labels" id="swipe-labels" hidden><span id="lbl-before"></span><span id="lbl-after"></span></div>
+
+    <div class="hud">
+      <div class="counter" id="counter">
+        <div class="counter-num" id="counter-num">–</div>
+        <div class="counter-sub" id="counter-sub"></div>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Map layer" id="mode">
+          <button data-mode="water" class="on">Water</button>
+          <button data-mode="lost">Lost water</button>
+          <button data-mode="composite">Colour composite</button>
+          <button data-mode="radar">Radar only</button>
+          <button data-mode="flood">Flood threshold</button>
+        </div>
+        <div class="seg" role="group" aria-label="Polarisation" id="pol">
+          <button data-pol="hh" class="on">HH</button>
+          <button data-pol="hv">HV</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="swipe-toggle"> Swipe before / after</label>
+        <label class="toggle"><input type="checkbox" id="terrain-toggle" checked> 3D</label>
+      </div>
+      <div class="timeline">
+        <input type="range" id="slider" min="0" max="10" value="0" step="1" aria-label="NISAR date">
+        <div class="ticks" id="ticks"></div>
+        <div class="date-line"><span id="date-label"></span> <span class="badge small" id="status-badge"></span> <span class="gap" id="gap-note"></span></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/maplibre-gl.js"></script>
+<script src="vendor/chart.umd.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
