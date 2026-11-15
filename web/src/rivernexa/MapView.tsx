@@ -31,6 +31,13 @@ const baseStyle = (): StyleSpecification => ({
       attribution:
         '<a href="https://s2maps.eu">Sentinel-2 cloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016)',
     },
+    hs: {
+      type: "raster-dem",
+      encoding: "terrarium",
+      tileSize: 256,
+      maxzoom: 14,
+      tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+    },
     dem: {
       type: "raster-dem",
       encoding: "terrarium",
@@ -43,7 +50,10 @@ const baseStyle = (): StyleSpecification => ({
   },
   layers: [
     { id: "bg", type: "background", paint: { "background-color": "#0e1420" } },
-    { id: "s2", type: "raster", source: "s2", paint: { "raster-saturation": -0.35, "raster-brightness-max": 0.8 } },
+    // Night style: dimmed, cool satellite imagery with hillshade on top, so the relief reads under the neon layers.
+    { id: "s2", type: "raster", source: "s2", paint: { "raster-saturation": -0.6, "raster-brightness-max": 0.55, "raster-contrast": 0.1, "raster-hue-rotate": 0 } },
+    { id: "hillshade", type: "hillshade", source: "hs",
+      paint: { "hillshade-exaggeration": 0.75, "hillshade-shadow-color": "#000510", "hillshade-highlight-color": "#9cc4ff", "hillshade-accent-color": "#12305a", "hillshade-illumination-direction": 315 } },
   ],
 });
 
@@ -193,9 +203,9 @@ export function MapView(p: Props) {
       }
       map.addSource("probes", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({ id: "probes-ring", type: "circle", source: "probes",
-        paint: { "circle-radius": 12, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": COLORS.sim, "circle-stroke-width": 1 } });
+        paint: { "circle-radius": 12, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#f4f1ea", "circle-stroke-width": 1.5, "circle-stroke-opacity": 0.8 } });
       map.addLayer({ id: "probes", type: "circle", source: "probes",
-        paint: { "circle-radius": 5.5, "circle-color": COLORS.sim, "circle-stroke-color": "#f4f1ea", "circle-stroke-width": 1.5 } });
+        paint: { "circle-radius": 5.5, "circle-color": "#f4f1ea", "circle-stroke-color": "#06080c", "circle-stroke-width": 2 } });
     };
 
     let loaded = 0;
@@ -328,9 +338,6 @@ export function MapView(p: Props) {
       for (const z of zones) b.setPaintProperty(`${z}-glow${slot}`, "raster-opacity", v);
     };
     const st = glowState.current;
-    // Darker basemap under the neon layer so it glows; normal elsewhere.
-    b.setPaintProperty("s2", "raster-brightness-max", p.mode === "pulse" ? 0.42 : 0.8);
-    b.setPaintProperty("s2", "raster-saturation", p.mode === "pulse" ? -0.7 : -0.35);
     if (p.mode !== "pulse") {
       setOp("A", 0); setOp("B", 0);
       return;

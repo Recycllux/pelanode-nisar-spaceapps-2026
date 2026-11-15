@@ -28,12 +28,12 @@ export const MODES: { key: Mode; label: string }[] = [
 
 /** Hex mirrors of the CSS data tokens, for canvas (chart.js) and maplibre paint. */
 export const COLORS = {
-  water: "#2563eb",
-  waterLine: "#5b8def",
-  veg: "#16a34a",
-  vegLine: "#3fb96a",
-  lost: "#dc2626",
-  lostLine: "#ef5350",
+  water: "#00e5ff",
+  waterLine: "#00e5ff",
+  veg: "#ffd60a",
+  vegLine: "#ffd60a",
+  lost: "#ff2ec4",
+  lostLine: "#ff2ec4",
   level: "#e8e4dc",
   median: "#9b978e",
   s1: "#cbb98e",

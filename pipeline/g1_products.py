@@ -1,10 +1,10 @@
 """G1: web products for the app (docs/data/), from the water maps and filtered backscatter.
 
 Per zone, everything is warped to Web Mercator (EPSG:3857) so MapLibre can drape it as an image:
-  <zone>/<date>_class.png   water classes (transparent land, blue open water, green water under vegetation)
-  <zone>/<date>_hh.webp, _hv.webp  filtered backscatter, grey scale -22..-2 dB (HH) / -24..-8 dB (HV)
-  <zone>/lost.png           before vs driest: red = water lost, blue = water kept, green = gained
-  <zone>/composite.webp      radar colour composite: R = before HH, G = B = driest HH
+  <zone>/<date>_class.png   water classes (transparent land, cyan open water, yellow water under vegetation)
+  <zone>/<date>_hh.webp, _hv.webp  filtered backscatter on a night-blue ramp, -22..-2 dB (HH) / -24..-8 dB (HV)
+  <zone>/lost.png           before vs driest: magenta = water lost, cyan = water kept, lime = gained
+  <zone>/composite.webp      radar colour composite: R = B = before HH, G = driest HH (magenta = brighter before, green = brighter after)
 Tables: areas.csv (km2 per zone and date, with river levels), manifest.json (bounds, dates, labels).
 Water maps come from SAM 2.1 refinement when present, otherwise from the physics seed.
 """
@@ -15,6 +15,7 @@ import rasterio
 from PIL import Image
 from rasterio.warp import calculate_default_transform, reproject, Resampling, transform_bounds
 
+from palette import CYAN, LIME, MAGENTA, RADAR_STOPS, YELLOW, ramp
 from config import DATA, REPO
 from zones import ZONES
 
@@ -47,10 +48,11 @@ def to_mercator(src_path, band, res, resampling, nodata):
 
 
 def grey(db, lo, hi):
+    """Radar backdrop: backscatter on the night-blue RADAR_STOPS ramp (name kept for history)."""
     v = np.clip((db - lo) / (hi - lo), 0, 1)
     a = np.where(np.isfinite(db), 255, 0).astype(np.uint8)
-    g = (np.nan_to_num(v) * 255).astype(np.uint8)
-    return np.dstack([g, g, g, a])
+    rgb = ramp(v, RADAR_STOPS).astype(np.uint8)
+    return np.dstack([rgb, a])
 
 
 def save(rgba, path):
@@ -79,7 +81,7 @@ def main():
             c, bounds = to_mercator(water_path(z, d), 1, res, Resampling.nearest, 255)
             cls_m[d] = c
             rgba = np.zeros(c.shape + (4,), np.uint8)
-            rgba[c == 1] = [37, 99, 235, 220]; rgba[c == 2] = [22, 163, 74, 220]
+            rgba[c == 1] = [*CYAN, 220]; rgba[c == 2] = [*YELLOW, 220]
             save(rgba, OUT / z / f"{d}_class.png")
             hh, rb = to_mercator(DATA / "filtered" / z / f"{d}.tif", 1, RADAR_RES[z], Resampling.average, np.nan)
             hv, _ = to_mercator(DATA / "filtered" / z / f"{d}.tif", 2, RADAR_RES[z], Resampling.average, np.nan)
@@ -97,12 +99,12 @@ def main():
         b, a_ = PAIRS[z]
         wb, wa = np.isin(cls_m[b], [1, 2]), np.isin(cls_m[a_], [1, 2])
         lost = np.zeros(wb.shape + (4,), np.uint8)
-        lost[wb & ~wa] = [220, 38, 38, 235]; lost[wb & wa] = [37, 99, 235, 150]; lost[~wb & wa] = [22, 163, 74, 200]
+        lost[wb & ~wa] = [*MAGENTA, 235]; lost[wb & wa] = [*CYAN, 150]; lost[~wb & wa] = [*LIME, 210]
         save(lost, OUT / z / "lost.png")
         hb, _ = to_mercator(DATA / "filtered" / z / f"{b}.tif", 1, res, Resampling.average, np.nan)
         ha, _ = to_mercator(DATA / "filtered" / z / f"{a_}.tif", 1, res, Resampling.average, np.nan)
         n = lambda x: (np.nan_to_num(np.clip((x + 20) / 18, 0, 1)) * 255).astype(np.uint8)
-        comp = np.dstack([n(hb), n(ha), n(ha), np.where(np.isfinite(hb), 255, 0).astype(np.uint8)])
+        comp = np.dstack([n(hb), n(ha), n(hb), np.where(np.isfinite(hb), 255, 0).astype(np.uint8)])
         save(comp, OUT / z / "composite.webp")
         w, s, e, nn = bounds
         manifest["zones"][z] = dict(

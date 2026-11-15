@@ -20,6 +20,7 @@ from rasterio.warp import transform as warp_xy
 from scipy.stats import spearmanr
 
 from config import DATA, REPO
+from palette import MAGENTA, VIOLET, YELLOW, ramp
 from zones import ZONES
 from g1_products import PAIRS, water_path, to_mercator, save, WEB_RES
 from rasterio.warp import Resampling
@@ -96,9 +97,8 @@ def flood_threshold(lv):
     m, _ = to_mercator(DATA / "k1" / "delta_flood_threshold.tif", 1, WEB_RES[z], Resampling.nearest, np.nan)
     lo, hi = 0.0, 100.0
     v = np.clip((m - lo) / (hi - lo), 0, 1)
-    # light yellow (wet even at low water) -> deep purple (needs high water)
-    c0, c1 = np.array([253, 231, 37]), np.array([68, 1, 84])
-    rgb = (c0[None, None] * (1 - v[..., None]) + c1[None, None] * v[..., None])
+    # neon yellow (wet even at low water) -> magenta -> violet (needs high water)
+    rgb = ramp(v, [(0.0, YELLOW), (0.5, MAGENTA), (1.0, VIOLET)])
     rgba = np.dstack([np.nan_to_num(rgb), np.where(np.isfinite(m), 230, 0)]).astype(np.uint8)
     q = np.round(rgba / 16) * 16  # quantise to keep the palette PNG small
     save(np.clip(q, 0, 255).astype(np.uint8), OUT / z / "flood_threshold.png")

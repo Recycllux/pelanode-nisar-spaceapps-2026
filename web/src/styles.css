@@ -72,11 +72,12 @@
   --btn-edge-hover: oklch(0.5 0.035 255);
   --btn-hover-warm: oklch(0.26 0.008 80);
   /* data colours (match the map images and chart) */
-  --water: oklch(0.546 0.215 262.9);  /* #2563eb */
-  --veg: oklch(0.627 0.17 149.2);     /* #16a34a */
-  --lost: oklch(0.577 0.215 27.3);    /* #dc2626 */
-  --lost-text: oklch(0.7 0.17 25);
-  --veg-text: oklch(0.76 0.15 150);
+  --water: #00e5ff;   /* neon cyan: open water / water kept */
+  --veg: #ffd60a;     /* neon yellow: water under reeds */
+  --lost: #ff2ec4;    /* neon magenta: water lost */
+  --gained: #aaff28;  /* neon lime: water appeared */
+  --lost-text: #ff6fd6;
+  --veg-text: #ffe066;
   /* status tags */
   --real: oklch(0.78 0.11 150);
   --sim: oklch(0.8 0.11 75);

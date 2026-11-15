@@ -19,15 +19,14 @@ import json
 from PIL import Image
 from rasterio.warp import transform_bounds
 
+import palette
 from config import DATA, REPO
 from g1_products import water_path
 from zones import ZONES
 
 OUT = REPO / "docs" / "data"
 GLOW_RES = {"delta": 100.0, "cernavoda": 30.0, "balta_mica_brailei": 50.0}  # m; the field is smooth anyway
-CYAN = np.array([0, 229, 255], float)
-MAGENTA = np.array([255, 46, 196], float)
-LIME = np.array([170, 255, 40], float)
+CYAN, MAGENTA, LIME = (np.array(c, float) for c in (palette.CYAN, palette.MAGENTA, palette.LIME))
 SIGMA_M = 30.0
 HALO_M = 160.0
 

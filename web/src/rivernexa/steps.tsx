@@ -111,7 +111,7 @@ function Cernavoda({ d }: { d: Data }) {
           The gauge fell from <span className="num">{lv(a)} cm</span> on {fmtDate(a)} to{" "}
           <span className="num">{lv(b)} cm</span> on {fmtDate(b)}
           {g.enr_cm != null && <> (low-water mark <span className="num">{g.enr_cm} cm</span>)</>}. In the colour composite,
-          cyan specks in the river are sandbanks that turned bright as the water dropped.
+          green specks in the river are sandbanks that turned bright as the water dropped.
         </p>
       )}
       {c && c[a] && c[b] && (
