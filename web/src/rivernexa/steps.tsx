@@ -78,8 +78,11 @@ function Overview({ d }: { d: Data }) {
   );
 }
 
-function Delta({ d }: { d: Data }) {
-  const h = vegHeadline(d.area, d.manifest.zones.delta);
+function Delta({ d, ctx }: { d: Data; ctx?: DecideCtx }) {
+  // Follow the dates shown on the map card, so the text and the counter always agree.
+  const dz = d.manifest.zones.delta;
+  const pick = (k?: string) => (k && d.area["delta"]?.[k] ? k : undefined);
+  const h = vegHeadline(d.area, { ...dz, before: pick(ctx?.fromKey) ?? dz.before, after: pick(ctx?.toKey) ?? dz.after });
   if (!h) return <h2>Danube Delta: the water hidden under reeds</h2>;
   return (
     <>
@@ -91,7 +94,7 @@ function Delta({ d }: { d: Data }) {
       <p>
         L-band radar sees more. When reeds stand in water, the signal bounces off the water and back up the stems (a
         "double bounce"), so flooded reeds shine in <b>HH</b> but not in <b>HV</b>. That water went from{" "}
-        <b className="num">{num(h.vegBefore)}</b> to <b className="num">{num(h.vegAfter)} km²</b>.
+        <b className="num">{num(h.vegBefore)}</b> on {fmtDate(h.before)} to <b className="num">{num(h.vegAfter)} km²</b> on {fmtDate(h.after)}.
       </p>
       <p>Drag the white bar to compare {fmtDate(h.before)} with any date, and toggle HH / HV to see the effect.</p>
     </>

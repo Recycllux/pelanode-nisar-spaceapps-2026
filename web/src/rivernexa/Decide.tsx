@@ -7,7 +7,7 @@ import { Tag } from "./Tag";
 
 /** A 500 m spot chosen on the map or from the proposed probe sites. */
 export type Site = { lon: number; lat: number; zone: string; t: number[]; v: number[]; label?: string };
-export type DecideCtx = { site: Site | null; pickSite: (s: Site) => void; dateKey: string };
+export type DecideCtx = { site: Site | null; pickSite: (s: Site) => void; dateKey: string; fromKey?: string; toKey?: string };
 
 const safeUrl = (u?: string) => (u && /^https:\/\//i.test(u) ? u : undefined);
 

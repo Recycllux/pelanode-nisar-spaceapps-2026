@@ -142,7 +142,7 @@ function Atlas({ data }: { data: Data }) {
         <TagKey />
 
         <article key={step} className="story fade-in">
-          <Body d={data} ctx={{ site, pickSite: setSite, dateKey: afterKey }} />
+          <Body d={data} ctx={{ site, pickSite: setSite, dateKey: afterKey, fromKey, toKey }} />
           {step < STEPS.length - 1 && (
             <button type="button" className="next-step" onClick={() => goStep(step + 1)}>
               Next: {STEPS[step + 1]!.title} <ArrowRight size={16} aria-hidden />
