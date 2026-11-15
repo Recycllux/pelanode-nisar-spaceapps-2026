@@ -185,6 +185,8 @@ export function MapView(p: Props) {
               "raster-opacity-transition": { duration: 0, delay: 0 },
               "raster-fade-duration": 0,
               "raster-resampling": k === "radar" || k === "comp" ? "linear" : "nearest",
+              // keep the neon colours vivid over the dark basemap
+              ...(k === "radar" || k === "comp" ? {} : { "raster-saturation": 0.3, "raster-contrast": 0.15 }),
             },
           });
         }
@@ -197,10 +199,16 @@ export function MapView(p: Props) {
           for (const slot of ["A", "B"]) {
             map.addSource(`${z}-glow${slot}`, { type: "image", url: dataUrl(`${z}/${g.dates[0]}_glow.webp`), coordinates: g.coordinates as never });
             map.addLayer({ id: `${z}-glow${slot}`, type: "raster", source: `${z}-glow${slot}`,
-              paint: { "raster-opacity": 0, "raster-opacity-transition": { duration: 0, delay: 0 }, "raster-fade-duration": 0, "raster-resampling": "linear" } });
+              paint: { "raster-opacity": 0, "raster-opacity-transition": { duration: 0, delay: 0 }, "raster-fade-duration": 0, "raster-resampling": "linear",
+                "raster-saturation": 0.3, "raster-contrast": 0.15 } });
           }
         }
       }
+      // Relief shading on top of every data layer, so the 3D terrain reads through the colours too.
+      map.addLayer({ id: "hillshade-top", type: "hillshade", source: "hs",
+        paint: { "hillshade-exaggeration": 0.85, "hillshade-shadow-color": "rgba(0, 3, 12, 0.6)",
+          "hillshade-highlight-color": "rgba(200, 225, 255, 0.18)", "hillshade-accent-color": "rgba(0, 0, 0, 0)",
+          "hillshade-illumination-direction": 315 } });
       map.addSource("probes", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({ id: "probes-ring", type: "circle", source: "probes",
         paint: { "circle-radius": 12, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#f4f1ea", "circle-stroke-width": 1.5, "circle-stroke-opacity": 0.8 } });
