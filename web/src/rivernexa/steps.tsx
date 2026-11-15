@@ -71,7 +71,7 @@ function Overview({ d }: { d: Data }) {
           <div><dt className="num">{g.recordDays} days</dt><dd>below the 2015–2025 minimum for that day</dd></div>
         </dl>
       )}
-      <p>Red on the map is water that was there in June and is gone now. Use the steps above to fly through three places.</p>
+      <p>Each column on the map is a 500 m square: its height is how much of it is water, and red means it has lost water since June. Press <b>Play</b> under the map to watch the summer of 2026 unfold, or use the steps above to fly through three places.</p>
       <Note>Designed for the Danube Delta Biosphere Reserve Administration (ARBDD) as an early-warning indicator.</Note>
     </>
   );
@@ -360,7 +360,7 @@ function About({ d }: { d: Data }) {
 }
 
 export const STEPS: Step[] = [
-  { key: "overview", title: "Overview", apply: { mode: "lost", swipe: false, fly: "corridor", zone: "delta" }, Body: Overview },
+  { key: "overview", title: "Overview", apply: { mode: "pulse", swipe: false, fly: "corridor", zone: "delta" }, Body: Overview },
   { key: "delta", title: "Delta", apply: { fly: "delta", zone: "delta", chartZone: "delta", mode: "water", dateKey: "after", swipe: true }, Body: Delta },
   { key: "cernavoda", title: "Cernavodă", apply: { fly: "cernavoda", zone: "cernavoda", chartZone: "cernavoda", mode: "composite", dateKey: "20260817", swipe: false }, Body: Cernavoda },
   { key: "balta", title: "Balta Mică", apply: { fly: "balta_mica_brailei", zone: "balta_mica_brailei", chartZone: "balta_mica_brailei", mode: "water", dateKey: "after", swipe: true }, Body: Balta },

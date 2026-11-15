@@ -72,3 +72,22 @@ def test_sentinel1_products():
     assert len(dv) >= 5 and sorted(v["iou"] for v in dv)[len(dv) // 2] > 0.6
     f = json.load(open(D / "s1_forecast.json"))
     assert set(f["tests"]) == {"2025", "2026"}
+
+
+def test_water_pulse_cells():
+    """G2: every cell row is [lon, lat, total % x dates, under-vegetation % x dates], within its zone."""
+    p = json.loads((REPO / "docs" / "data" / "pulse.json").read_text())
+    man = json.loads((REPO / "docs" / "data" / "manifest.json").read_text())
+    n = len(p["dates"])
+    assert p["dates"] == man["zones"]["delta"]["dates"]
+    for zone, z in p["zones"].items():
+        lons = [c[0] for c in man["zones"][zone]["coordinates"]]
+        lats = [c[1] for c in man["zones"][zone]["coordinates"]]
+        assert z["cells"], zone
+        for c in z["cells"]:
+            assert len(c) == 2 + 2 * n
+            assert min(lons) - 0.01 <= c[0] <= max(lons) + 0.01 and min(lats) - 0.01 <= c[1] <= max(lats) + 0.01
+            assert all(0 <= v <= 100 for v in c[2:])
+            assert all(v <= t for t, v in zip(c[2:2 + n], c[2 + n:]))  # under-vegetation is part of total
+        # half a 500 m cell is ~0.003 degrees
+        assert 0.002 < abs(z["east"][0]) < 0.005 and 0.001 < abs(z["north"][1]) < 0.004

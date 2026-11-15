@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, Box, ChevronRight, Columns2 } from "lucide-react";
+import { ArrowRight, Box, ChevronRight, Columns2, Pause, Play } from "lucide-react";
 import { ASSET_BASE, MODES, OPENING_DATE, ZONES, ZONE_KEYS, type Mode, type Pol, type ZoneKey } from "./config";
 import { loadAll, zoneChange, type Data } from "./data";
 import { fmtDate, num, signed, MINUS } from "./format";
@@ -72,12 +72,19 @@ function Atlas({ data }: { data: Data }) {
   const [swipe, setSwipe] = useState(!!init.a.swipe);
   const [terrain, setTerrain] = useState(true);
   const [probes, setProbes] = useState(!!init.a.probes);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    if (!playing) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % DATES.length), 1500);
+    return () => clearInterval(t);
+  }, [playing, DATES.length]);
   const [fly, setFly] = useState<FlyReq>(init.a.fly ? { n: 1, target: init.a.fly } : { n: 0, target: "corridor" });
 
   const goStep = useCallback(
     (i: number) => {
       const a = STEPS[i]!.apply;
       setStep(i);
+      setPlaying(false);
       setProbes(!!a.probes);
       if (a.mode) setMode(a.mode);
       if (a.zone) setZone(a.zone);
@@ -236,6 +243,18 @@ function Atlas({ data }: { data: Data }) {
 
           <div className="controlbar-row timeline">
             <label htmlFor="date-slider" className="sr-only">NISAR date</label>
+            <div className="timeline-row">
+            <button
+              type="button"
+              className="play-btn"
+              aria-pressed={playing}
+              onClick={() => setPlaying((v) => !v)}
+              title="Play the 11 NISAR dates as an animation"
+            >
+              {playing ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}
+              {playing ? "Pause" : "Play"}
+            </button>
+            <div>
             <input
               id="date-slider"
               type="range"
@@ -243,11 +262,13 @@ function Atlas({ data }: { data: Data }) {
               max={DATES.length - 1}
               step={1}
               value={idx}
-              onChange={(e) => setIdx(+e.target.value)}
+              onChange={(e) => { setPlaying(false); setIdx(+e.target.value); }}
               aria-valuetext={`${fmtDate(afterKey)} ${afterKey.slice(0, 4)}`}
             />
             <div className="ticks" aria-hidden>
               {DATES.map((d) => <span key={d}>{fmtDate(d)}</span>)}
+            </div>
+            </div>
             </div>
             <div className="date-line">
               <span className="num">NISAR {fmtDate(afterKey)} {afterKey.slice(0, 4)} · track 065 descending</span>

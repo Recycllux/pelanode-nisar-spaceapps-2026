@@ -3,7 +3,7 @@ export const DATA_BASE: string = import.meta.env["VITE_DATA_BASE"] ?? "./data/";
 export const ASSET_BASE: string = import.meta.env["VITE_ASSET_BASE"] ?? "./";
 
 export type ZoneKey = "delta" | "cernavoda" | "balta_mica_brailei";
-export type Mode = "water" | "lost" | "composite" | "radar" | "flood";
+export type Mode = "pulse" | "water" | "lost" | "composite" | "radar" | "flood";
 export type Pol = "hh" | "hv";
 
 export const ZONES: Record<
@@ -18,6 +18,7 @@ export const ZONE_KEYS = Object.keys(ZONES) as ZoneKey[];
 export const CORRIDOR: [[number, number], [number, number]] = [[27.85, 44.2], [29.75, 45.5]];
 
 export const MODES: { key: Mode; label: string }[] = [
+  { key: "pulse", label: "Water pulse 3D" },
   { key: "water", label: "Water" },
   { key: "lost", label: "Lost water" },
   { key: "composite", label: "Colour composite" },

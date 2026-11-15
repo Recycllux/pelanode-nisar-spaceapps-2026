@@ -2,15 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 // MapLibre 6 loads its web worker from a separate ES module file; ship it as a hashed asset.
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
+import type * as GeoJSON from "geojson";
 import { type Map as MLMap, type StyleSpecification, type ImageSource, type GeoJSONSource } from "maplibre-gl";
 import { COLORS, CORRIDOR, OPERA_CREDIT, ZONES, ZONE_KEYS, type Mode, type Pol, type ZoneKey } from "./config";
-import { dataUrl, type Data } from "./data";
+import { dataUrl, type Data, type Pulse } from "./data";
+import { fmtDate } from "./format";
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 export type FlyReq = { n: number; target: "corridor" | ZoneKey };
 
 const OPACITY: Record<Mode, Record<string, number>> = {
+  pulse: { radar: 0, comp: 0, class: 0, lost: 0, flood: 0 },
   water: { radar: 0.9, comp: 0, class: 0.85, lost: 0, flood: 0 },
   radar: { radar: 1, comp: 0, class: 0, lost: 0, flood: 0 },
   lost: { radar: 0.55, comp: 0, class: 0, lost: 0.95, flood: 0 },
@@ -66,6 +69,79 @@ type Props = {
   afterLabel: string;
   children?: React.ReactNode;
 };
+
+
+/* ---------- Water pulse: 500 m cells drawn as 3D columns ---------- */
+const PULSE_MAX_M = 1800; // column height for a cell that is 100 % water
+const PULSE_MIN_M = 40; // keep dried-out cells visible as a flat tile
+const PULSE_SHRINK = 0.86; // gap between columns
+
+function pulseGeoJSON(p: Pulse) {
+  const n = p.dates.length;
+  const features: GeoJSON.Feature[] = [];
+  for (const [zone, z] of Object.entries(p.zones)) {
+    if (!z) continue;
+    const [ex, ey] = z.east.map((v) => v * PULSE_SHRINK) as [number, number];
+    const [nx, ny] = z.north.map((v) => v * PULSE_SHRINK) as [number, number];
+    z.cells.forEach((c, i) => {
+      const [lon, lat] = c as [number, number];
+      const props: Record<string, number | string> = { zone };
+      for (let k = 0; k < n; k++) {
+        props[`t${k}`] = c[2 + k] ?? 0;
+        props[`v${k}`] = c[2 + n + k] ?? 0;
+      }
+      features.push({
+        type: "Feature",
+        id: features.length,
+        properties: { ...props, i },
+        geometry: {
+          type: "Polygon",
+          coordinates: [[
+            [lon - ex - nx, lat - ey - ny],
+            [lon + ex - nx, lat + ey - ny],
+            [lon + ex + nx, lat + ey + ny],
+            [lon - ex + nx, lat - ey + ny],
+            [lon - ex - nx, lat - ey - ny],
+          ]],
+        },
+      });
+    });
+  }
+  return { type: "FeatureCollection" as const, features };
+}
+
+/** Paint for one date k: column height = water share, colour = change since the first date. */
+const pulseHeightAt = (k: number, scale: number) => ["+", PULSE_MIN_M * scale, ["*", (scale * PULSE_MAX_M) / 100, ["get", `t${k}`]]];
+// Taller columns when zoomed out, so the corridor overview still reads in 3D.
+const pulseHeight = (k: number) => ["interpolate", ["linear"], ["zoom"], 7.5, pulseHeightAt(k, 3.5), 9.5, pulseHeightAt(k, 1.4), 11.5, pulseHeightAt(k, 0.8)];
+const pulseColor = (k: number) => [
+  "interpolate", ["linear"], ["-", ["get", `t${k}`], ["get", "t0"]],
+  ...PULSE_COLORS.flat(),
+];
+
+export const PULSE_COLORS: [number, string][] = [
+  [-60, "#991b1b"],
+  [-35, "#dc2626"],
+  [-15, "#f97316"],
+  [-5, "#fbbf24"],
+  [0, "#38bdf8"],
+  [15, "#2563eb"],
+  [40, "#1e3a8a"],
+];
+
+function sparkSVG(vals: number[], veg: number[], idx: number) {
+  const W = 200, H = 54, n = vals.length;
+  const x = (k: number) => 4 + (k * (W - 8)) / (n - 1);
+  const y = (v: number) => H - 4 - (v / 100) * (H - 8);
+  const line = (a: number[]) => a.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">
+<rect x="0" y="0" width="${W}" height="${H}" rx="4" fill="#0b1220"/>
+<path d="${line(vals)} L${x(n - 1)},${H - 4} L${x(0)},${H - 4}Z" fill="#38bdf833"/>
+<path d="${line(vals)}" fill="none" stroke="#38bdf8" stroke-width="2"/>
+<path d="${line(veg)}" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="3 2"/>
+<circle cx="${x(idx)}" cy="${y(vals[idx] ?? 0)}" r="3.5" fill="#fff"/>
+</svg>`;
+}
 
 export function MapView(p: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -128,6 +204,22 @@ export function MapView(p: Props) {
             },
           });
         }
+      }
+      const pulse = latest.current.data.pulse;
+      if (pulse && map === b) {
+        map.addSource("pulse", { type: "geojson", data: pulseGeoJSON(pulse) as never });
+        map.addLayer({
+          id: "pulse",
+          type: "fill-extrusion",
+          source: "pulse",
+          layout: { visibility: "none" },
+          paint: {
+            "fill-extrusion-height": pulseHeight(0) as never,
+            "fill-extrusion-color": pulseColor(0) as never,
+            "fill-extrusion-opacity": 0.92,
+            "fill-extrusion-vertical-gradient": true,
+          },
+        });
       }
       map.addSource("probes", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({ id: "probes-ring", type: "circle", source: "probes",
@@ -192,6 +284,32 @@ export function MapView(p: Props) {
     b.on("mouseenter", "probes", () => (b.getCanvas().style.cursor = "pointer"));
     b.on("mouseleave", "probes", () => (b.getCanvas().style.cursor = ""));
 
+    // Water pulse: hover a column to see that 500 m cell's water over time.
+    const pulsePop = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "240px", className: "pulse-pop" });
+    b.on("mousemove", "pulse", (e) => {
+      const f = e.features?.[0];
+      const pulse = latest.current.data.pulse;
+      if (!f || !pulse) return;
+      const pr = f.properties as Record<string, number>;
+      const n = pulse.dates.length;
+      const t = Array.from({ length: n }, (_, k) => pr[`t${k}`] ?? 0);
+      const v = Array.from({ length: n }, (_, k) => pr[`v${k}`] ?? 0);
+      const k = Math.max(0, pulse.dates.indexOf(latest.current.afterKey));
+      const d = (t[k] ?? 0) - (t[0] ?? 0);
+      b.getCanvas().style.cursor = "crosshair";
+      pulsePop
+        .setLngLat(e.lngLat)
+        .setHTML(
+          `<strong>500 m cell · ${fmtDate(latest.current.afterKey)}</strong>` +
+            `<p>Water <b>${t[k]}%</b> of the cell (${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)} pts since ${fmtDate(pulse.dates[0]!)}), under reeds ${v[k]}%</p>` +
+            sparkSVG(t, v, k) +
+            `<p class="pulse-key"><i style="background:#38bdf8"></i>all water <i style="background:#34d399"></i>under reeds</p>`,
+        )
+        .addTo(b);
+    });
+    b.on("mouseleave", "pulse", () => { b.getCanvas().style.cursor = ""; pulsePop.remove(); });
+
+
     const ro = new ResizeObserver(() => { a.resize(); b.resize(); });
     ro.observe(wrapRef.current!);
     return () => { ro.disconnect(); a.remove(); b.remove(); maps.current = null; };
@@ -227,6 +345,18 @@ export function MapView(p: Props) {
     // The "before" map is only visible while swipe compare is on; don't fetch its images until then.
     if (p.swipeOn) apply(maps.current.a, "a", p.beforeKey);
   }, [ready, p.mode, p.pol, p.afterKey, p.beforeKey, p.swipeOn, p.data]);
+
+  // Water pulse: show the columns for the selected date.
+  useEffect(() => {
+    if (!ready || !maps.current) return;
+    const b = maps.current.b;
+    if (!b.getLayer("pulse")) return;
+    b.setLayoutProperty("pulse", "visibility", p.mode === "pulse" ? "visible" : "none");
+    if (p.mode !== "pulse") return;
+    const k = Math.max(0, (p.data.pulse?.dates ?? []).indexOf(p.afterKey));
+    b.setPaintProperty("pulse", "fill-extrusion-height", pulseHeight(k) as never);
+    b.setPaintProperty("pulse", "fill-extrusion-color", pulseColor(k) as never);
+  }, [ready, p.mode, p.afterKey, p.data.pulse]);
 
   useEffect(() => {
     if (!ready || !maps.current) return;

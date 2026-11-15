@@ -67,6 +67,13 @@ export type EvidenceItem = {
 };
 export type Evidence = { checked_by?: string; items?: EvidenceItem[] };
 
+/** 500 m cells: [lon, lat, total water % per date..., water-under-vegetation % per date...]. */
+export type Pulse = {
+  dates: string[];
+  cell_m: number;
+  zones: Partial<Record<ZoneKey, { east: [number, number]; north: [number, number]; cells: number[][] }>>;
+};
+
 export type AreaIndex = Partial<Record<string, Record<string, AreaRow>>>;
 
 export type Data = {
@@ -79,6 +86,7 @@ export type Data = {
   forecast: Forecast | null;
   s1: S1 | null;
   s1fc: S1Forecast | null;
+  pulse: Pulse | null;
 };
 
 export const dataUrl = (path: string) => `${DATA_BASE}${path}`;
@@ -116,7 +124,7 @@ export async function loadAll(): Promise<Data> {
     if (!r.ok) throw new Error(`areas.csv: ${r.status}`);
     return r.text();
   });
-  const [manifest, areaText, river, probes, evidence, analysis, forecast, s1, s1fc] = await Promise.all([
+  const [manifest, areaText, river, probes, evidence, analysis, forecast, s1, s1fc, pulse] = await Promise.all([
     getJSON<Manifest>("manifest.json"),
     csv,
     getJSON<River>("river.json"),
@@ -126,6 +134,7 @@ export async function loadAll(): Promise<Data> {
     getJSON<Forecast>("forecast.json", true),
     getJSON<S1>("s1.json", true),
     getJSON<S1Forecast>("s1_forecast.json", true),
+    getJSON<Pulse>("pulse.json", true),
   ]);
   return {
     manifest: manifest!,
@@ -137,6 +146,7 @@ export async function loadAll(): Promise<Data> {
     forecast,
     s1,
     s1fc,
+    pulse,
   };
 }
 
