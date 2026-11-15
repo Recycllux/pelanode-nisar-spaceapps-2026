@@ -74,6 +74,9 @@ type Props = {
   probes: boolean;
   fly: FlyReq;
   onCenterZone: (z: ZoneKey) => void;
+  /** When set, clicking the map picks the nearest 500 m spot (Decide step). */
+  onPickSite?: (s: { lon: number; lat: number; zone: string; t: number[]; v: number[] }) => void;
+  site?: { lon: number; lat: number } | null;
   beforeLabel: string;
   afterLabel: string;
   children?: React.ReactNode;
@@ -85,7 +88,7 @@ const GLOW_FADE_MS = 750;
 
 type CellHit = { zone: string; t: number[]; v: number[] };
 /** Nearest 500 m cell to a point, via a coarse lon/lat grid index. */
-function makeCellIndex(p: Pulse) {
+export function makeCellIndex(p: Pulse) {
   const G = 0.005;
   const idx = new Map<string, { lon: number; lat: number; zone: string; c: number[] }[]>();
   for (const [zone, z] of Object.entries(p.zones)) {
@@ -209,6 +212,11 @@ export function MapView(p: Props) {
         paint: { "hillshade-exaggeration": 0.85, "hillshade-shadow-color": "rgba(0, 3, 12, 0.6)",
           "hillshade-highlight-color": "rgba(200, 225, 255, 0.18)", "hillshade-accent-color": "rgba(0, 0, 0, 0)",
           "hillshade-illumination-direction": 315 } });
+      map.addSource("site", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addLayer({ id: "site-ring", type: "circle", source: "site",
+        paint: { "circle-radius": 16, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#ffffff", "circle-stroke-width": 2.5 } });
+      map.addLayer({ id: "site-dot", type: "circle", source: "site",
+        paint: { "circle-radius": 4, "circle-color": "#ffffff" } });
       map.addSource("probes", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({ id: "probes-ring", type: "circle", source: "probes",
         paint: { "circle-radius": 12, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#f4f1ea", "circle-stroke-width": 1.5, "circle-stroke-opacity": 0.8 } });
@@ -296,6 +304,13 @@ export function MapView(p: Props) {
         .addTo(b);
     });
     b.on("mouseout", () => pulsePop.remove());
+    b.on("click", (e) => {
+      const L = latest.current;
+      if (!L.onPickSite || !L.data.pulse) return;
+      cellAt ??= makeCellIndex(L.data.pulse);
+      const hit = cellAt(e.lngLat.lng, e.lngLat.lat);
+      if (hit) L.onPickSite({ lon: e.lngLat.lng, lat: e.lngLat.lat, zone: hit.zone, t: hit.t, v: hit.v });
+    });
 
 
     const ro = new ResizeObserver(() => { a.resize(); b.resize(); });
@@ -333,6 +348,12 @@ export function MapView(p: Props) {
     // The "before" map is only visible while swipe compare is on; don't fetch its images until then.
     if (p.swipeOn) apply(maps.current.a, "a", p.beforeKey);
   }, [ready, p.mode, p.pol, p.afterKey, p.beforeKey, p.swipeOn, p.data]);
+
+  useEffect(() => {
+    if (!ready || !maps.current) return;
+    const src = maps.current.b.getSource("site") as GeoJSONSource | undefined;
+    src?.setData({ type: "FeatureCollection", features: p.site ? [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [p.site.lon, p.site.lat] } }] : [] } as never);
+  }, [ready, p.site]);
 
   // Water pulse: cross-fade the neon change layer to the selected date.
   const glowState = useRef<{ front: "A" | "B"; key: string | null }>({ front: "A", key: null });

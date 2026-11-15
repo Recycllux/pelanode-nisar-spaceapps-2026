@@ -6,6 +6,7 @@ import { fmtDate, num, signed, MINUS } from "./format";
 import { Legend } from "./Legend";
 import { MapView, type FlyReq } from "./MapView";
 import { STEPS } from "./steps";
+import type { Site } from "./Decide";
 import { StatusBadge, Tag, TagKey } from "./Tag";
 import { WaterChart } from "./WaterChart";
 
@@ -73,6 +74,7 @@ function Atlas({ data }: { data: Data }) {
   const [terrain, setTerrain] = useState(true);
   const [probes, setProbes] = useState(!!init.a.probes);
   const [playing, setPlaying] = useState(false);
+  const [site, setSite] = useState<Site | null>(null);
   useEffect(() => {
     if (!playing) return;
     const t = setInterval(() => setIdx((i) => (i + 1) % DATES.length), 1500);
@@ -123,7 +125,7 @@ function Atlas({ data }: { data: Data }) {
     <main className="atlas">
       <aside className="story-col" aria-label="Story">
         <nav aria-label="Story steps">
-          <p className="ctl-label">Story · 8 steps</p>
+          <p className="ctl-label">Story · {STEPS.length} steps</p>
           <ol className="step-index">
             {STEPS.map((s, i) => (
               <li key={s.key}>
@@ -140,7 +142,7 @@ function Atlas({ data }: { data: Data }) {
         <TagKey />
 
         <article key={step} className="story fade-in">
-          <Body d={data} />
+          <Body d={data} ctx={{ site, pickSite: setSite, dateKey: afterKey }} />
           {step < STEPS.length - 1 && (
             <button type="button" className="next-step" onClick={() => goStep(step + 1)}>
               Next: {STEPS[step + 1]!.title} <ArrowRight size={16} aria-hidden />
@@ -177,6 +179,8 @@ function Atlas({ data }: { data: Data }) {
           probes={probes}
           fly={fly}
           onCenterZone={setZone}
+          onPickSite={STEPS[step]!.key === "decide" ? (s) => setSite(s) : undefined}
+          site={STEPS[step]!.key === "decide" ? site : null}
           beforeLabel={`◀ ${fmtDate(fromKey)} (earlier)`}
           afterLabel={`${fmtDate(toKey)} (later) ▶`}
         >

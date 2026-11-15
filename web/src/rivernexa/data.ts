@@ -77,6 +77,16 @@ export type Pulse = {
 /** Smoothed neon change layers (G3): one WebP per zone and date, on these corners. */
 export type Glow = { zones: Partial<Record<ZoneKey, { dates: string[]; coordinates: [number, number][] }>> };
 
+/** Decision framework (docs/data/decisions.json): thresholds per parameter and actions per actor. */
+export type Decisions = {
+  source: string;
+  disclaimer: string;
+  parameters: { key: string; name: string; question: string; measure: string;
+    thresholds: { alert: string; kind: string; text: string }[]; sources: [string, string][] }[];
+  actors: { key: string; name: string }[];
+  actions: Record<string, Record<string, [string, string]>>;
+};
+
 export type AreaIndex = Partial<Record<string, Record<string, AreaRow>>>;
 
 export type Data = {
@@ -91,6 +101,7 @@ export type Data = {
   s1fc: S1Forecast | null;
   pulse: Pulse | null;
   glow: Glow | null;
+  decisions: Decisions | null;
 };
 
 export const dataUrl = (path: string) => `${DATA_BASE}${path}`;
@@ -128,7 +139,7 @@ export async function loadAll(): Promise<Data> {
     if (!r.ok) throw new Error(`areas.csv: ${r.status}`);
     return r.text();
   });
-  const [manifest, areaText, river, probes, evidence, analysis, forecast, s1, s1fc, pulse, glow] = await Promise.all([
+  const [manifest, areaText, river, probes, evidence, analysis, forecast, s1, s1fc, pulse, glow, decisions] = await Promise.all([
     getJSON<Manifest>("manifest.json"),
     csv,
     getJSON<River>("river.json"),
@@ -140,6 +151,7 @@ export async function loadAll(): Promise<Data> {
     getJSON<S1Forecast>("s1_forecast.json", true),
     getJSON<Pulse>("pulse.json", true),
     getJSON<Glow>("glow.json", true),
+    getJSON<Decisions>("decisions.json", true),
   ]);
   return {
     manifest: manifest!,
@@ -153,6 +165,7 @@ export async function loadAll(): Promise<Data> {
     s1fc,
     pulse,
     glow,
+    decisions,
   };
 }
 

@@ -103,3 +103,20 @@ def test_water_glow_layers():
             assert (REPO / "docs" / "data" / zone / f"{d}_glow.webp").stat().st_size > 1000
         for (x, y), (mx, my) in zip(z["coordinates"], man["zones"][zone]["coordinates"]):
             assert abs(x - mx) < 0.01 and abs(y - my) < 0.01
+
+
+def test_decisions_framework():
+    import json
+    from pathlib import Path
+    d = json.loads((Path(__file__).resolve().parents[1] / "docs/data/decisions.json").read_text())
+    keys = {p["key"] for p in d["parameters"]}
+    assert keys == {"depth", "oxygen", "salinity", "temperature"}
+    actors = {a["key"] for a in d["actors"]}
+    assert len(actors) == 6
+    for p in keys:
+        for a in actors:
+            imm, long_ = d["actions"][p][a]
+            assert imm and long_
+    for p in d["parameters"]:
+        assert p["thresholds"] and p["sources"]
+    assert d["disclaimer"]

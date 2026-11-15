@@ -3,6 +3,7 @@ import { bestLag, gaugeSummary, overlapCheck, vegHeadline, yearRanking, type Dat
 import { fmtDate, fmtIso, key2iso, num, signed, MINUS } from "./format";
 import { Tag } from "./Tag";
 import { YearRanking } from "./YearRanking";
+import { Decide, type DecideCtx } from "./Decide";
 
 export type StepApply = {
   mode?: Mode;
@@ -13,7 +14,7 @@ export type StepApply = {
   chartZone?: ZoneKey;
   probes?: boolean;
 };
-export type Step = { key: string; title: string; apply: StepApply; Body: (p: { d: Data }) => React.ReactNode };
+export type Step = { key: string; title: string; apply: StepApply; Body: (p: { d: Data; ctx?: DecideCtx }) => React.ReactNode };
 
 const Note = ({ children }: { children: React.ReactNode }) => <p className="note">{children}</p>;
 
@@ -367,5 +368,6 @@ export const STEPS: Step[] = [
   { key: "river", title: "River levels", apply: { fly: "delta", zone: "delta", chartZone: "delta", mode: "flood" }, Body: RiverLevels },
   { key: "why", title: "Why it changed", apply: { mode: "lost", fly: "corridor", zone: "delta" }, Body: Why },
   { key: "loop", title: "Close the loop", apply: { fly: "delta", zone: "delta", chartZone: "delta", mode: "lost", probes: true }, Body: Loop },
+  { key: "decide", title: "Decide", apply: { fly: "delta", zone: "delta", chartZone: "delta", mode: "pulse", dateKey: "after", swipe: false, probes: true }, Body: Decide },
   { key: "about", title: "About", apply: {}, Body: About },
 ];

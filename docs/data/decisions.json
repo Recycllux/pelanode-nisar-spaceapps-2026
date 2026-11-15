@@ -1,0 +1,92 @@
+{
+  "source": "RiverNexa decision framework, Team Recycllux, 14 Nov 2026 (From measurements to decisions)",
+  "disclaimer": "Not an operating procedure. Thresholds are indicative and must be calibrated per site with local managers. A reading informs a decision; it does not trigger pumping, releases, fish transfers, navigation restrictions or changes to nuclear operations.",
+  "parameters": [
+    {
+      "key": "depth", "name": "Water depth", "question": "How much water remains, and where?",
+      "measure": "Calibrated depth sensor or a surveyed water-level reference at fixed points. Local depth is not river stage.",
+      "thresholds": [
+        {"alert": "Approaching a local seasonal minimum", "kind": "Proposed pilot rule", "text": "Flag when the depth or water-level target agreed for this habitat and season is approached; leave a buffer for inspection. There is no universal wetland minimum in cm."},
+        {"alert": "Rapid decline or drying pattern", "kind": "Proposed pilot rule", "text": "A repeated fall beyond the site's agreed rate of change, or mapped loss of inundation around priority habitat, requests a targeted field check at fixed points."},
+        {"alert": "Below a habitat or intake operating limit", "kind": "Local operating limit", "text": "Escalate when a validated reading breaches the manager's ecological target or the operator's documented intake or pump limit."},
+        {"alert": "Navigation depth constraint", "kind": "Local operating limit", "text": "Compare official fairway soundings with draught and clearance. A wetland reading cannot certify a navigable route."}
+      ],
+      "sources": [["Ramsar Resolution VIII.1", "https://www.ramsar.org/sites/default/files/documents/pdf/res/key_res_viii_01_e.pdf"], ["Danube Commission: deep fairway channel", "https://www.danubecommission.org/uploads/doc/2026/20260512_13_WG_TECH/143a_Deep_channel_Austria.pdf"]]
+    },
+    {
+      "key": "oxygen", "name": "Dissolved oxygen", "question": "Is there enough oxygen for aquatic life?",
+      "measure": "mg/L with temperature (and % saturation), at dawn and at representative depths; calibrated, cleaned sensors.",
+      "thresholds": [
+        {"alert": "Below 5 mg/L", "kind": "Published screening value", "text": "EPA: generally stressful for fish. Confirm the reading, check the trend and prepare the local response."},
+        {"alert": "Below 3 mg/L", "kind": "Published screening value", "text": "EPA: generally too low to support fish. Treat a credible breach as urgent and notify the responsible manager."},
+        {"alert": "Below 2-3 mg/L", "kind": "Published screening value", "text": "Hypoxia: rapid assessment and response matter more than the label."},
+        {"alert": "Rapid overnight decline / repeated dawn lows", "kind": "Proposed pilot rule", "text": "Escalate a falling trend likely to breach the site's target before dawn, even if the latest reading is above 5 mg/L."}
+      ],
+      "sources": [["US EPA: Dissolved oxygen", "https://www.epa.gov/national-aquatic-resource-surveys/indicators-dissolved-oxygen"], ["US EPA: Hypoxia 101", "https://www.epa.gov/ms-htf/hypoxia-101"]]
+    },
+    {
+      "key": "salinity", "name": "Salinity", "question": "Is the water becoming too salty for its use?",
+      "measure": "Raw conductivity (dS/m or µS/cm) and temperature, with the conversion method; confirm changes with water samples.",
+      "thresholds": [
+        {"alert": "Crossing 0.5 ppt at a normally fresh site", "kind": "Published classification", "text": "USGS freshwater class boundary, not a toxicity limit: prompts an intrusion check."},
+        {"alert": "Sustained rise above the seasonal baseline", "kind": "Proposed pilot rule", "text": "Investigate a change beyond the site's agreed normal range, including rate and duration."},
+        {"alert": "Irrigation ECw 0.7-3.0 dS/m", "kind": "Published guidance (FAO)", "text": "Slight to moderate restriction: review crop sensitivity, soil and drainage."},
+        {"alert": "Irrigation ECw above 3.0 dS/m", "kind": "Published guidance (FAO)", "text": "Severe restriction: seek agronomic review before continued use."}
+      ],
+      "sources": [["FAO: Water quality for agriculture", "https://www.fao.org/4/t0234e/t0234e01.htm"], ["US EPA: Salinity", "https://www.epa.gov/national-aquatic-resource-surveys/indicators-salinity"]]
+    },
+    {
+      "key": "temperature", "name": "Water temperature", "question": "Is heat making a difficult situation worse?",
+      "measure": "Daily peaks and dawn conditions, together with oxygen, at representative locations and depths.",
+      "thresholds": [
+        {"alert": "Common carp best growth 23-30 °C", "kind": "Published context (FAO)", "text": "A species reference range, not an alarm band."},
+        {"alert": "Above 30 °C in a common-carp pilot", "kind": "Proposed watch rule", "text": "Check sustained exposure, dawn oxygen and fish behaviour; prepare the agreed heat response."},
+        {"alert": "High temperature plus oxygen below target", "kind": "Proposed escalation rule", "text": "Prioritise heat combined with DO below 5 mg/L, a steep oxygen decline or visible distress."},
+        {"alert": "Cooling water near a plant limit", "kind": "Local operating limit", "text": "Use the plant's own intake measurements and approved limits. No generic reactor trigger is proposed."}
+      ],
+      "sources": [["FAO: Cyprinus carpio", "https://www.fao.org/fishery/docs/DOCUMENT/aquaculture/CulturedSpecies/file/en/en_commoncarp.htm"], ["US EPA: DO factsheet", "https://www.epa.gov/system/files/documents/2021-07/parameter-factsheet_do.pdf"]]
+    }
+  ],
+  "actors": [
+    {"key": "fish", "name": "Fish farmer"},
+    {"key": "irrigation", "name": "Farmer / irrigation cooperative"},
+    {"key": "wetland", "name": "Wetland manager"},
+    {"key": "authority", "name": "Water authority / dam operator"},
+    {"key": "nuclear", "name": "Nuclear plant operator"},
+    {"key": "port", "name": "Port / shipping operator"}
+  ],
+  "actions": {
+    "depth": {
+      "fish": ["Confirm depth at fixed points, check oxygen and inlets; top up with suitable water if permitted; consider partial harvest or transfer only with fish-welfare checks.", "Revise stocking, storage and drought contingency plans; assess deeper refuges or pond repairs."],
+      "irrigation": ["Check intake usability and allocation; combine with soil moisture and crop stage; reschedule permitted irrigation; switch source only after quality checks.", "Adapt crop mix, scheduling and storage to reliable supply."],
+      "wetland": ["Inspect mapped drying hotspots and refuge connections; assess gates or request an authorised transfer; protect sensitive areas from disturbance.", "Restore hydrological connections and agree seasonal targets and water-allocation plans."],
+      "authority": ["Verify gauges, storage, downstream needs and travel time; review abstraction limits and feasible environmental releases under the drought plan.", "Revise drought allocation rules and reservoir operations, accounting for energy and flood-control trade-offs."],
+      "nuclear": ["Use official intake levels and hydrological forecasts to assess margins; prepare output changes only under approved procedures. A wetland alert is context, not a control signal.", "Evaluate cooling-water resilience through licensed engineering review."],
+      "port": ["Consult official fairway depths and berth soundings; adjust loading, timing or transport mode.", "Use verified low-water histories for fleet, berth and logistics planning."]
+    },
+    "oxygen": {
+      "fish": ["Confirm the zone; start or increase safe aeration; reduce or stop feeding and fertilising; consider screened water exchange or partial harvest.", "Match stocking and feed to oxygen capacity; invest in aeration, backup power and alarms."],
+      "irrigation": ["Do not stop irrigation just because the source has low oxygen; if runoff is implicated, coordinate source inspection.", "Improve nutrient budgeting, runoff and drainage management."],
+      "wetland": ["Check refuge pools and report fish distress; inspect blooms or pollution with agencies; aerate only small managed refuges.", "Restore connectivity and reduce nutrient pressures with catchment partners."],
+      "authority": ["Sample upstream, downstream and outlet water; assess feasible flow or outlet changes; verify release quality first.", "Review release structures, operating rules and catchment nutrient measures."],
+      "nuclear": ["Notify the plant's environmental team if its receiving water is affected; verify intake and outfall permit requirements.", "Improve environmental monitoring and mitigation within the permit where evidence supports it."],
+      "port": ["Share berth observations and follow pollution or navigation instructions.", "Include water-quality evidence in environmental planning for recurrent events."]
+    },
+    "salinity": {
+      "fish": ["Check pond and intake salinity against the stocked species' tolerance; pause an intake that exceeds the farm's limit; avoid abrupt changes.", "Review intake protection, storage, species suitability and source redundancy."],
+      "irrigation": ["At ECw 0.7-3.0 dS/m review the crop and soil; above 3.0 seek advice; switch or blend tested sources where allowed.", "Track soil salinity and drainage; choose suitable crops and sources."],
+      "wetland": ["Map affected inlets and sample connected pools; assess gates or a freshwater top-up only if connectivity and permits allow.", "Restore freshwater connections and agree a seasonal salinity envelope."],
+      "authority": ["Combine salinity profiles with flow, levels and coastal conditions; review feasible releases or abstraction changes.", "Include salt intrusion in drought scenarios and allocation rules."],
+      "nuclear": ["If a change reaches the plant supply, specialists compare verified intake chemistry with operating specifications.", "Assess treatment and materials through licensed engineering review if repeated."],
+      "port": ["Salinity alone does not imply inadequate draught; notify berth or environmental teams of confirmed changes.", "Assess local water-quality and infrastructure implications with specialists."]
+    },
+    "temperature": {
+      "fish": ["Check oxygen first; intensify aeration and adjust feeding; avoid handling in the hottest period; exchange with cooler water only if suitable.", "Plan stock density, aeration and pond refuges around summer conditions."],
+      "irrigation": ["Use the alert as a prompt to check weather, soil moisture and crop stage; schedule from those data, not water temperature alone.", "Adapt calendars, crop choices and irrigation design to heat risk."],
+      "wetland": ["Inspect priority pools and confirm cooler refuges also have enough oxygen; limit disturbance.", "Restore connections and vegetation or shade consistent with habitat objectives."],
+      "authority": ["Check outlet temperature and oxygen as well as volume; avoid thermal shock or cold, oxygen-poor releases.", "Review outlet design and environmental release rules."],
+      "nuclear": ["Compare actual intake temperature, river conditions and discharge limits; plan output changes only under existing procedures.", "Assess cooling resilience through licensed engineering and environmental review."],
+      "port": ["Review official low-water forecasts if hot weather coincides with falling levels.", "Include verified heat and low-water episodes in seasonal planning."]
+    }
+  }
+}
