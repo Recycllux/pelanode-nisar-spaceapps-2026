@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+// MapLibre 6 loads its web worker from a separate ES module file; ship it as a hashed asset.
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { type Map as MLMap, type StyleSpecification, type ImageSource, type GeoJSONSource } from "maplibre-gl";
 import { COLORS, CORRIDOR, OPERA_CREDIT, ZONES, ZONE_KEYS, type Mode, type Pol, type ZoneKey } from "./config";
 import { dataUrl, type Data } from "./data";
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 export type FlyReq = { n: number; target: "corridor" | ZoneKey };
 
