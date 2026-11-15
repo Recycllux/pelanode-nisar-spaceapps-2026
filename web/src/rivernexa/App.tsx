@@ -98,12 +98,17 @@ function Atlas({ data }: { data: Data }) {
   const beforeKey = zm.before;
   const canSwipe = mode === "water" || mode === "radar";
   const swipeOn = swipe && canSwipe;
-  const counterAfter = mode === "lost" || mode === "composite" || mode === "flood" ? zm.after : afterKey;
-  const change = zoneChange(data.area, zone, beforeKey, counterAfter);
+  const fixedPair = mode === "lost" || mode === "composite" || mode === "flood";
+  // Always put the earlier date on the left (and first in the counter), even when the
+  // slider is moved before the zone's reference date.
+  const [fromKey, toKey] = fixedPair
+    ? [beforeKey, zm.after]
+    : afterKey < beforeKey ? [afterKey, beforeKey] : [beforeKey, afterKey];
+  const change = zoneChange(data.area, zone, fromKey, toKey);
   const Body = STEPS[step]!.Body;
   // One debounced announcement instead of a live region that speaks on every slider step.
   const said = useDebounced(
-    change ? `${signed(change.dv)} square kilometres of water in ${ZONES[zone].name}, ${fmtDate(beforeKey)} to ${fmtDate(counterAfter)}` : "",
+    change ? `${signed(change.dv)} square kilometres of water in ${ZONES[zone].name}, ${fmtDate(fromKey)} to ${fmtDate(toKey)}` : "",
     700,
   );
 
@@ -158,15 +163,15 @@ function Atlas({ data }: { data: Data }) {
           data={data}
           mode={mode}
           pol={pol}
-          afterKey={afterKey}
-          beforeKey={beforeKey}
+          afterKey={swipeOn ? toKey : afterKey}
+          beforeKey={swipeOn ? fromKey : beforeKey}
           swipeOn={swipeOn}
           terrain={terrain}
           probes={probes}
           fly={fly}
           onCenterZone={setZone}
-          beforeLabel={`◀ ${fmtDate(beforeKey)} (before)`}
-          afterLabel={`${fmtDate(afterKey)} ▶`}
+          beforeLabel={`◀ ${fmtDate(fromKey)} (earlier)`}
+          afterLabel={`${fmtDate(toKey)} (later) ▶`}
         >
           {change && (
             <div className="counter">
@@ -174,7 +179,7 @@ function Atlas({ data }: { data: Data }) {
                 {signed(change.dv)} <span className="counter-unit">km²</span>
               </div>
               <p className="counter-sub">
-                water in {ZONES[zone].name}, {fmtDate(beforeKey)} → {fmtDate(counterAfter)}{" "}
+                water in {ZONES[zone].name}, {fmtDate(fromKey)} → {fmtDate(toKey)}{" "}
                 <span className="num">({change.pct > 0 ? "+" : change.pct < 0 ? MINUS : ""}{Math.abs(change.pct)}%)</span>
               </p>
               <p className="counter-sub">
