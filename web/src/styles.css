@@ -226,9 +226,15 @@
   display: inline-block; vertical-align: 0.1em; font: 500 10px/1 var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase;
   border: 1px solid currentColor; border-radius: 2px; padding: 3px 5px; white-space: nowrap; background: transparent;
 }
-.tag-real { color: var(--real); }
-.tag-sim { color: var(--sim); }
-.tag-future { color: var(--future); }
+/* Status labels are told apart by fill, border style and symbol, never by hue,
+   so they cannot be confused with the data colours on the map. */
+.tag::before { margin-right: 4px; font-size: 9px; }
+.tag-real { color: #0d0f12; background: #f4f1ea; border-color: #f4f1ea; font-weight: 600; }
+.tag-real::before { content: "●"; }
+.tag-sim { color: #f4f1ea; border-style: dashed; }
+.tag-sim::before { content: "◐"; }
+.tag-future { color: #c9c5bc; border-style: dotted; border-width: 1.5px; }
+.tag-future::before { content: "○"; }
 
 /* ---------- story column ---------- */
 .step-index { list-style: none; margin: 6px 0 1.25rem; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -320,12 +326,14 @@
 .pulse-pop .maplibregl-popup-content { padding: 8px 10px; }
 .pulse-pop p { margin: 0.2rem 0 0.35rem; font-size: 12px; }
 .pulse-pop svg { display: block; }
-.pulse-key { display: flex; align-items: center; gap: 4px; color: var(--muted-foreground); font-size: 11px !important; }
-.pulse-key i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; }
-.pulse-ramp { display: inline-flex; align-items: center; gap: 6px; }
-.pulse-ramp i { display: inline-block; width: 120px; height: 10px; border-radius: 3px; border: 1px solid var(--ink-line); }
+.pulse-key { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; color: var(--muted-foreground); font-size: 11px !important; }
+.pulse-key i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; }
+.pulse-key i.dash { width: 12px; height: 0; border-top: 2px dashed; border-radius: 0; background: none; }
 .play-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 12px;
   border-radius: var(--radius); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-foreground);
   font: 600 12.5px/1 var(--font-sans); cursor: pointer; }
 .play-btn[aria-pressed="true"] { background: transparent; color: var(--accent); }
 .timeline-row { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
+.pulse-key span { white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.tag-status { color: #c9c5bc; border-color: #5e646e; }
+.tag-status.is-final { color: #f4f1ea; border-color: #f4f1ea; }

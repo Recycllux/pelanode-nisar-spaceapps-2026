@@ -1,6 +1,5 @@
-import type { Mode, Pol } from "./config";
+import { GLOW, type Mode, type Pol } from "./config";
 import { Tag } from "./Tag";
-import { PULSE_COLORS } from "./MapView";
 
 const GREY = ["#000000", "#404040", "#808080", "#bfbfbf", "#ffffff"];
 const VIRIDIS = ["#fde725", "#5ec962", "#21918c", "#3b528b", "#440154"];
@@ -20,13 +19,13 @@ function Steps({ colors }: { colors: string[] }) {
 
 export function Legend({ mode, pol }: { mode: Mode; pol: Pol }) {
   const P = pol.toUpperCase();
-  const ramp = `linear-gradient(90deg, ${PULSE_COLORS.map(([, c]) => c).join(", ")})`;
   const items: Record<Mode, React.ReactNode> = {
     pulse: (
       <>
-        <span>Column height: share of each 500 m cell that is water</span>
-        <span className="pulse-ramp">water lost <i style={{ background: ramp }} aria-hidden /> kept / gained</span>
-        <span className="text-muted-foreground">(colour: change since 18 Jun · hover a column for its history)</span>
+        <span><Swatch color={GLOW.kept} />Water kept</span>
+        <span><Swatch color={GLOW.lost} />Water lost</span>
+        <span><Swatch color={GLOW.gained} />Water appeared</span>
+        <span className="text-muted-foreground">(since 18 Jun · press Play · hover for a spot's history)</span>
       </>
     ),
     water: (

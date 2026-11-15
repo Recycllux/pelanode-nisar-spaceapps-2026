@@ -74,6 +74,9 @@ export type Pulse = {
   zones: Partial<Record<ZoneKey, { east: [number, number]; north: [number, number]; cells: number[][] }>>;
 };
 
+/** Smoothed neon change layers (G3): one WebP per zone and date, on these corners. */
+export type Glow = { zones: Partial<Record<ZoneKey, { dates: string[]; coordinates: [number, number][] }>> };
+
 export type AreaIndex = Partial<Record<string, Record<string, AreaRow>>>;
 
 export type Data = {
@@ -87,6 +90,7 @@ export type Data = {
   s1: S1 | null;
   s1fc: S1Forecast | null;
   pulse: Pulse | null;
+  glow: Glow | null;
 };
 
 export const dataUrl = (path: string) => `${DATA_BASE}${path}`;
@@ -124,7 +128,7 @@ export async function loadAll(): Promise<Data> {
     if (!r.ok) throw new Error(`areas.csv: ${r.status}`);
     return r.text();
   });
-  const [manifest, areaText, river, probes, evidence, analysis, forecast, s1, s1fc, pulse] = await Promise.all([
+  const [manifest, areaText, river, probes, evidence, analysis, forecast, s1, s1fc, pulse, glow] = await Promise.all([
     getJSON<Manifest>("manifest.json"),
     csv,
     getJSON<River>("river.json"),
@@ -135,6 +139,7 @@ export async function loadAll(): Promise<Data> {
     getJSON<S1>("s1.json", true),
     getJSON<S1Forecast>("s1_forecast.json", true),
     getJSON<Pulse>("pulse.json", true),
+    getJSON<Glow>("glow.json", true),
   ]);
   return {
     manifest: manifest!,
@@ -147,6 +152,7 @@ export async function loadAll(): Promise<Data> {
     s1,
     s1fc,
     pulse,
+    glow,
   };
 }
 

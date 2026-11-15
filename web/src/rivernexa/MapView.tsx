@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 // MapLibre 6 loads its web worker from a separate ES module file; ship it as a hashed asset.
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import type * as GeoJSON from "geojson";
 import { type Map as MLMap, type StyleSpecification, type ImageSource, type GeoJSONSource } from "maplibre-gl";
-import { COLORS, CORRIDOR, OPERA_CREDIT, ZONES, ZONE_KEYS, type Mode, type Pol, type ZoneKey } from "./config";
+import { COLORS, CORRIDOR, SPARK, OPERA_CREDIT, ZONES, ZONE_KEYS, type Mode, type Pol, type ZoneKey } from "./config";
 import { dataUrl, type Data, type Pulse } from "./data";
 import { fmtDate } from "./format";
 
@@ -71,77 +70,52 @@ type Props = {
 };
 
 
-/* ---------- Water pulse: 500 m cells drawn as 3D columns ---------- */
-const PULSE_MAX_M = 1800; // column height for a cell that is 100 % water
-const PULSE_MIN_M = 40; // keep dried-out cells visible as a flat tile
-const PULSE_SHRINK = 0.86; // gap between columns
+/* ---------- Water pulse: smooth neon change layers (G3) + hover history from 500 m cells (G2) ---------- */
+const GLOW_FADE_MS = 750;
 
-function pulseGeoJSON(p: Pulse) {
-  const n = p.dates.length;
-  const features: GeoJSON.Feature[] = [];
+type CellHit = { zone: string; t: number[]; v: number[] };
+/** Nearest 500 m cell to a point, via a coarse lon/lat grid index. */
+function makeCellIndex(p: Pulse) {
+  const G = 0.005;
+  const idx = new Map<string, { lon: number; lat: number; zone: string; c: number[] }[]>();
   for (const [zone, z] of Object.entries(p.zones)) {
-    if (!z) continue;
-    const [ex, ey] = z.east.map((v) => v * PULSE_SHRINK) as [number, number];
-    const [nx, ny] = z.north.map((v) => v * PULSE_SHRINK) as [number, number];
-    z.cells.forEach((c, i) => {
-      const [lon, lat] = c as [number, number];
-      const props: Record<string, number | string> = { zone };
-      for (let k = 0; k < n; k++) {
-        props[`t${k}`] = c[2 + k] ?? 0;
-        props[`v${k}`] = c[2 + n + k] ?? 0;
-      }
-      features.push({
-        type: "Feature",
-        id: features.length,
-        properties: { ...props, i },
-        geometry: {
-          type: "Polygon",
-          coordinates: [[
-            [lon - ex - nx, lat - ey - ny],
-            [lon + ex - nx, lat + ey - ny],
-            [lon + ex + nx, lat + ey + ny],
-            [lon - ex + nx, lat - ey + ny],
-            [lon - ex - nx, lat - ey - ny],
-          ]],
-        },
-      });
-    });
+    for (const c of z?.cells ?? []) {
+      const k = `${Math.round(c[0]! / G)}|${Math.round(c[1]! / G)}`;
+      (idx.get(k) ?? idx.set(k, []).get(k)!).push({ lon: c[0]!, lat: c[1]!, zone, c });
+    }
   }
-  return { type: "FeatureCollection" as const, features };
+  const n = p.dates.length;
+  return (lon: number, lat: number): CellHit | null => {
+    const i = Math.round(lon / G), j = Math.round(lat / G);
+    let best: { d: number; zone: string; c: number[] } | null = null;
+    for (let di = -1; di <= 1; di++)
+      for (let dj = -1; dj <= 1; dj++)
+        for (const e of idx.get(`${i + di}|${j + dj}`) ?? []) {
+          const d = ((e.lon - lon) * Math.cos((lat * Math.PI) / 180)) ** 2 + (e.lat - lat) ** 2;
+          if (!best || d < best.d) best = { d, zone: e.zone, c: e.c };
+        }
+    if (!best || best.d > 0.0035 ** 2) return null;
+    return { zone: best.zone, t: best.c.slice(2, 2 + n), v: best.c.slice(2 + n, 2 + 2 * n) };
+  };
 }
-
-/** Paint for one date k: column height = water share, colour = change since the first date. */
-const pulseHeightAt = (k: number, scale: number) => ["+", PULSE_MIN_M * scale, ["*", (scale * PULSE_MAX_M) / 100, ["get", `t${k}`]]];
-// Taller columns when zoomed out, so the corridor overview still reads in 3D.
-const pulseHeight = (k: number) => ["interpolate", ["linear"], ["zoom"], 7.5, pulseHeightAt(k, 3.5), 9.5, pulseHeightAt(k, 1.4), 11.5, pulseHeightAt(k, 0.8)];
-const pulseColor = (k: number) => [
-  "interpolate", ["linear"], ["-", ["get", `t${k}`], ["get", "t0"]],
-  ...PULSE_COLORS.flat(),
-];
-
-export const PULSE_COLORS: [number, string][] = [
-  [-60, "#991b1b"],
-  [-35, "#dc2626"],
-  [-15, "#f97316"],
-  [-5, "#fbbf24"],
-  [0, "#38bdf8"],
-  [15, "#2563eb"],
-  [40, "#1e3a8a"],
-];
 
 function sparkSVG(vals: number[], veg: number[], idx: number) {
-  const W = 200, H = 54, n = vals.length;
-  const x = (k: number) => 4 + (k * (W - 8)) / (n - 1);
-  const y = (v: number) => H - 4 - (v / 100) * (H - 8);
+  const W = 210, H = 64, n = vals.length;
+  const x = (k: number) => 6 + (k * (W - 12)) / (n - 1);
+  const y = (v: number) => H - 6 - (v / 100) * (H - 12);
   const line = (a: number[]) => a.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const dots = (a: number[], c: string) => a.map((v, k) => `<circle cx="${x(k).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2" fill="${c}"/>`).join("");
   return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">
-<rect x="0" y="0" width="${W}" height="${H}" rx="4" fill="#0b1220"/>
-<path d="${line(vals)} L${x(n - 1)},${H - 4} L${x(0)},${H - 4}Z" fill="#38bdf833"/>
-<path d="${line(vals)}" fill="none" stroke="#38bdf8" stroke-width="2"/>
-<path d="${line(veg)}" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="3 2"/>
-<circle cx="${x(idx)}" cy="${y(vals[idx] ?? 0)}" r="3.5" fill="#fff"/>
+<rect x="0" y="0" width="${W}" height="${H}" rx="4" fill="#06080c"/>
+<line x1="${x(idx)}" x2="${x(idx)}" y1="4" y2="${H - 4}" stroke="#ffffff55" stroke-dasharray="2 2"/>
+<path d="${line(vals)} L${x(n - 1)},${H - 6} L${x(0)},${H - 6}Z" fill="${SPARK.all}22"/>
+<path d="${line(vals)}" fill="none" stroke="${SPARK.all}" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="${line(veg)}" fill="none" stroke="${SPARK.veg}" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round"/>
+${dots(veg, SPARK.veg)}
+<circle cx="${x(idx)}" cy="${y(vals[idx] ?? 0)}" r="4" fill="#fff" stroke="${SPARK.all}" stroke-width="2"/>
 </svg>`;
 }
+
 
 export function MapView(p: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -205,21 +179,17 @@ export function MapView(p: Props) {
           });
         }
       }
-      const pulse = latest.current.data.pulse;
-      if (pulse && map === b) {
-        map.addSource("pulse", { type: "geojson", data: pulseGeoJSON(pulse) as never });
-        map.addLayer({
-          id: "pulse",
-          type: "fill-extrusion",
-          source: "pulse",
-          layout: { visibility: "none" },
-          paint: {
-            "fill-extrusion-height": pulseHeight(0) as never,
-            "fill-extrusion-color": pulseColor(0) as never,
-            "fill-extrusion-opacity": 0.92,
-            "fill-extrusion-vertical-gradient": true,
-          },
-        });
+      const glow = latest.current.data.glow;
+      if (glow && map === b) {
+        for (const z of ZONE_KEYS) {
+          const g = glow.zones[z];
+          if (!g) continue;
+          for (const slot of ["A", "B"]) {
+            map.addSource(`${z}-glow${slot}`, { type: "image", url: dataUrl(`${z}/${g.dates[0]}_glow.webp`), coordinates: g.coordinates as never });
+            map.addLayer({ id: `${z}-glow${slot}`, type: "raster", source: `${z}-glow${slot}`,
+              paint: { "raster-opacity": 0, "raster-opacity-transition": { duration: 0, delay: 0 }, "raster-fade-duration": 0, "raster-resampling": "linear" } });
+          }
+        }
       }
       map.addSource("probes", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({ id: "probes-ring", type: "circle", source: "probes",
@@ -284,30 +254,30 @@ export function MapView(p: Props) {
     b.on("mouseenter", "probes", () => (b.getCanvas().style.cursor = "pointer"));
     b.on("mouseleave", "probes", () => (b.getCanvas().style.cursor = ""));
 
-    // Water pulse: hover a column to see that 500 m cell's water over time.
-    const pulsePop = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "240px", className: "pulse-pop" });
-    b.on("mousemove", "pulse", (e) => {
-      const f = e.features?.[0];
-      const pulse = latest.current.data.pulse;
-      if (!f || !pulse) return;
-      const pr = f.properties as Record<string, number>;
-      const n = pulse.dates.length;
-      const t = Array.from({ length: n }, (_, k) => pr[`t${k}`] ?? 0);
-      const v = Array.from({ length: n }, (_, k) => pr[`v${k}`] ?? 0);
-      const k = Math.max(0, pulse.dates.indexOf(latest.current.afterKey));
-      const d = (t[k] ?? 0) - (t[0] ?? 0);
+    // Water pulse: hover anywhere to see the nearest 500 m cell's water over time.
+    const pulsePop = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "250px", className: "pulse-pop" });
+    let cellAt: ReturnType<typeof makeCellIndex> | null = null;
+    b.on("mousemove", (e) => {
+      const L = latest.current;
+      if (L.mode !== "pulse" || !L.data.pulse) { pulsePop.remove(); return; }
+      cellAt ??= makeCellIndex(L.data.pulse);
+      const hit = cellAt(e.lngLat.lng, e.lngLat.lat);
+      if (!hit) { pulsePop.remove(); b.getCanvas().style.cursor = ""; return; }
+      const dates = L.data.pulse.dates;
+      const k = Math.max(0, dates.indexOf(L.afterKey));
+      const d = (hit.t[k] ?? 0) - (hit.t[0] ?? 0);
       b.getCanvas().style.cursor = "crosshair";
       pulsePop
         .setLngLat(e.lngLat)
         .setHTML(
-          `<strong>500 m cell · ${fmtDate(latest.current.afterKey)}</strong>` +
-            `<p>Water <b>${t[k]}%</b> of the cell (${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)} pts since ${fmtDate(pulse.dates[0]!)}), under reeds ${v[k]}%</p>` +
-            sparkSVG(t, v, k) +
-            `<p class="pulse-key"><i style="background:#38bdf8"></i>all water <i style="background:#34d399"></i>under reeds</p>`,
+          `<strong>This 500 m spot · ${fmtDate(L.afterKey)}</strong>` +
+            `<p>Water: <b style="color:${SPARK.all}">${hit.t[k]}%</b> (${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)} pts since ${fmtDate(dates[0]!)}) · under reeds: <b style="color:${SPARK.veg}">${hit.v[k]}%</b></p>` +
+            sparkSVG(hit.t, hit.v, k) +
+            `<p class="pulse-key"><span><i style="background:${SPARK.all}"></i>all water</span><span><i class="dash" style="border-color:${SPARK.veg}"></i>under reeds</span><span>${fmtDate(dates[0]!)} – ${fmtDate(dates[dates.length - 1]!)}</span></p>`,
         )
         .addTo(b);
     });
-    b.on("mouseleave", "pulse", () => { b.getCanvas().style.cursor = ""; pulsePop.remove(); });
+    b.on("mouseout", () => pulsePop.remove());
 
 
     const ro = new ResizeObserver(() => { a.resize(); b.resize(); });
@@ -346,17 +316,59 @@ export function MapView(p: Props) {
     if (p.swipeOn) apply(maps.current.a, "a", p.beforeKey);
   }, [ready, p.mode, p.pol, p.afterKey, p.beforeKey, p.swipeOn, p.data]);
 
-  // Water pulse: show the columns for the selected date.
+  // Water pulse: cross-fade the neon change layer to the selected date.
+  const glowState = useRef<{ front: "A" | "B"; key: string | null }>({ front: "A", key: null });
   useEffect(() => {
     if (!ready || !maps.current) return;
     const b = maps.current.b;
-    if (!b.getLayer("pulse")) return;
-    b.setLayoutProperty("pulse", "visibility", p.mode === "pulse" ? "visible" : "none");
-    if (p.mode !== "pulse") return;
-    const k = Math.max(0, (p.data.pulse?.dates ?? []).indexOf(p.afterKey));
-    b.setPaintProperty("pulse", "fill-extrusion-height", pulseHeight(k) as never);
-    b.setPaintProperty("pulse", "fill-extrusion-color", pulseColor(k) as never);
-  }, [ready, p.mode, p.afterKey, p.data.pulse]);
+    const glow = p.data.glow;
+    if (!glow) return;
+    const zones = ZONE_KEYS.filter((z) => glow.zones[z] && b.getLayer(`${z}-glowA`));
+    const setOp = (slot: "A" | "B", v: number) => {
+      for (const z of zones) b.setPaintProperty(`${z}-glow${slot}`, "raster-opacity", v);
+    };
+    const st = glowState.current;
+    // Darker basemap under the neon layer so it glows; normal elsewhere.
+    b.setPaintProperty("s2", "raster-brightness-max", p.mode === "pulse" ? 0.42 : 0.8);
+    b.setPaintProperty("s2", "raster-saturation", p.mode === "pulse" ? -0.7 : -0.35);
+    if (p.mode !== "pulse") {
+      setOp("A", 0); setOp("B", 0);
+      return;
+    }
+    if (st.key === p.afterKey) { setOp(st.front, 1); setOp(st.front === "A" ? "B" : "A", 0); return; }
+    const back: "A" | "B" = st.front === "A" ? "B" : "A";
+    const front = st.front;
+    const wasShowing = st.key !== null;
+    for (const z of zones) {
+      const g = glow.zones[z]!;
+      const d = g.dates.includes(p.afterKey) ? p.afterKey : g.dates[0]!;
+      (b.getSource(`${z}-glow${back}`) as ImageSource).updateImage({ url: dataUrl(`${z}/${d}_glow.webp`), coordinates: g.coordinates as never });
+    }
+    let raf = 0;
+    let cancelled = false;
+    const t0 = performance.now();
+    const waitThenFade = () => {
+      if (cancelled) return;
+      const loaded = zones.every((z) => b.isSourceLoaded(`${z}-glow${back}`));
+      if (!loaded && performance.now() - t0 < 4000) { raf = requestAnimationFrame(waitThenFade); return; }
+      const f0 = performance.now();
+      const ms = reducedMotion() ? 0 : GLOW_FADE_MS;
+      const step = (now: number) => {
+        if (cancelled) return;
+        const u = ms ? Math.min(1, (now - f0) / ms) : 1;
+        const e = u * u * (3 - 2 * u);
+        setOp(back, e);
+        setOp(front, wasShowing ? 1 - e : 0);
+        if (u < 1) raf = requestAnimationFrame(step);
+        else { st.front = back; st.key = key; }
+      };
+      raf = requestAnimationFrame(step);
+    };
+    const key = p.afterKey;
+    raf = requestAnimationFrame(waitThenFade);
+    return () => { cancelled = true; cancelAnimationFrame(raf); };
+  }, [ready, p.mode, p.afterKey, p.data.glow]);
+
 
   useEffect(() => {
     if (!ready || !maps.current) return;

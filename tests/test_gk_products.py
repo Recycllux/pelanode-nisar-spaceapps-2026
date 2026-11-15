@@ -91,3 +91,15 @@ def test_water_pulse_cells():
             assert all(v <= t for t, v in zip(c[2:2 + n], c[2 + n:]))  # under-vegetation is part of total
         # half a 500 m cell is ~0.003 degrees
         assert 0.002 < abs(z["east"][0]) < 0.005 and 0.001 < abs(z["north"][1]) < 0.004
+
+
+def test_water_glow_layers():
+    """G3: one neon change WebP per zone and date, with corners near the zone."""
+    g = json.loads((REPO / "docs" / "data" / "glow.json").read_text())
+    man = json.loads((REPO / "docs" / "data" / "manifest.json").read_text())
+    for zone, z in g["zones"].items():
+        assert z["dates"] == man["zones"][zone]["dates"]
+        for d in z["dates"]:
+            assert (REPO / "docs" / "data" / zone / f"{d}_glow.webp").stat().st_size > 1000
+        for (x, y), (mx, my) in zip(z["coordinates"], man["zones"][zone]["coordinates"]):
+            assert abs(x - mx) < 0.01 and abs(y - my) < 0.01

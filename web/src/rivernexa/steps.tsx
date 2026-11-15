@@ -71,7 +71,7 @@ function Overview({ d }: { d: Data }) {
           <div><dt className="num">{g.recordDays} days</dt><dd>below the 2015–2025 minimum for that day</dd></div>
         </dl>
       )}
-      <p>Each column on the map is a 500 m square: its height is how much of it is water, and red means it has lost water since June. Press <b>Play</b> under the map to watch the summer of 2026 unfold, or use the steps above to fly through three places.</p>
+      <p>On the map, cyan is water still there since 18 June, magenta is water that has gone and lime is new water. Press <b>Play</b> under the map to watch the summer of 2026 unfold, or use the steps above to fly through three places.</p>
       <Note>Designed for the Danube Delta Biosphere Reserve Administration (ARBDD) as an early-warning indicator.</Note>
     </>
   );

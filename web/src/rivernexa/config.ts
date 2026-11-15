@@ -18,7 +18,7 @@ export const ZONE_KEYS = Object.keys(ZONES) as ZoneKey[];
 export const CORRIDOR: [[number, number], [number, number]] = [[27.85, 44.2], [29.75, 45.5]];
 
 export const MODES: { key: Mode; label: string }[] = [
-  { key: "pulse", label: "Water pulse 3D" },
+  { key: "pulse", label: "Water pulse" },
   { key: "water", label: "Water" },
   { key: "lost", label: "Lost water" },
   { key: "composite", label: "Colour composite" },
@@ -44,6 +44,11 @@ export const COLORS = {
   tick: "#a9a59c",
   sim: "#d9a54a",
 };
+
+/** Neon change colours of the Water pulse layer (must match pipeline/g3_glow.py). */
+export const GLOW = { kept: "#00e5ff", lost: "#ff2ec4", gained: "#aaff28" };
+/** Hover chart lines: all water vs water under reeds. */
+export const SPARK = { all: "#00e5ff", veg: "#ffd60a" };
 
 export const OPENING_DATE = "20261016";
 export const OPERA_CREDIT =

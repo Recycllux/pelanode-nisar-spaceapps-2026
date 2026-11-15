@@ -15,7 +15,7 @@ export function Tag({ kind, children }: { kind: keyof typeof TITLES; children?: 
 
 export function StatusBadge({ status }: { status: string | undefined }) {
   if (!status) return null;
-  return <span className={`tag ${status === "Validated" ? "tag-real" : "tag-sim"}`}>{status}</span>;
+  return <span className={`tag tag-status ${status === "Validated" ? "is-final" : ""}`} title="NISAR product status">{status}</span>;
 }
 
 /** Visible key for the three labels (their meaning used to live only in hover tooltips). */
