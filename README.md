@@ -81,6 +81,6 @@ Methods and software
 - **Claude (Anthropic)** helped write the pipeline, tests, app code and documentation. The team reviewed and directed the work.
 - **SAM 2.1** (Meta) is used inside the pipeline to refine water shapes.
 - **TabPFN-3.5** (Prior Labs) is used inside the pipeline for the 12-day prediction.
-- The RiverNexa logo was made by the team with an AI image tool and redrawn as a vector (SVG) with Claude, with the lettering outlined from Montserrat (SIL Open Font License); it carries a visible "AI-generated" label in the app. No other AI-generated images or video are used.
+- The RiverNexa logo was made by the team with an AI image tool and redrawn as a vector (SVG) with Claude, with the lettering outlined from Montserrat (SIL Open Font License). The app's About step says so. No other AI-generated images or video are used.
 
 PelaNode is a concept, not a product. No NASA branding is used.

@@ -115,10 +115,6 @@
 }
 .brand { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
 .brand-logo { height: 32px; width: auto; }
-.ai-label {
-  font: 500 10px/1 var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--muted-foreground); border: 1px solid var(--border); border-radius: 2px; padding: 3px 5px;
-}
 .brand-sub { margin: 0 0 0 0.4rem; color: var(--muted-foreground); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand-tags { display: flex; gap: 0.35rem; flex-shrink: 0; }
 .status-msg { padding: 2rem 1rem; color: var(--muted-foreground); }

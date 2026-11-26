@@ -39,7 +39,6 @@ function Header() {
     <header className="masthead">
       <div className="brand">
         <img src={`${ASSET_BASE}logo.svg`} alt="RiverNexa" className="brand-logo" width={129} height={32} />
-        <span className="ai-label" title="This logo was made with an AI image tool">AI-generated</span>
         <h1 className="sr-only">RiverNexa</h1>
         <p className="brand-sub">NISAR L-band radar shows where the Lower Danube lost its water in 2026</p>
       </div>
