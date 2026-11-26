@@ -1,5 +1,5 @@
 // Static build for GitHub Pages: `npm run build` writes index.html + assets/ into ../docs,
-// next to the existing docs/data/, logo.png/logo.webp, og.jpg, favicon.png and licenses/ (never emptied, never copied).
+// next to the existing docs/data/, logo.svg/logo.png, og.jpg, favicon.svg/favicon.png and licenses/ (never emptied, never copied).
 import { fileURLToPath, URL } from "node:url";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
